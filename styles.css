@@ -1,0 +1,29 @@
+:root { --gap: 12px; --ink:#222; --bg:#fafafa; --brand:#111; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;}
+*{box-sizing:border-box}
+body { margin: 0; background:var(--bg); color:var(--ink); }
+.header { display:flex; gap: 16px; align-items:center; padding:18px 20px; background:var(--brand); color:#f4efe9; }
+.logo { height:70px; }
+h1 { margin:0; font-size:24px; letter-spacing:.3px; }
+.small { font-size:13px; opacity:.9; }
+.sheet { max-width: 1080px; margin: 16px auto; padding: 0 16px 32px; }
+.block { background:#fff; border:1px solid #e6e6e6; border-radius:10px; padding:16px; margin-top:14px; }
+.grid-2 { display:grid; grid-template-columns: 1fr 1fr; gap: var(--gap); }
+.grid-3 { display:grid; grid-template-columns: 1.2fr 1fr 1fr; gap: var(--gap); }
+.label { font-weight:600; margin-bottom:6px; }
+.input, .textarea, .select, .number { width:100%; padding:10px; border:1px solid #ccc; border-radius:8px; background:#fff; }
+.textarea { min-height:70px; resize:vertical; }
+.section-title { font-weight:700; font-size:18px; margin:4px 0 12px; border-bottom:2px solid #111; padding-bottom:6px; }
+table { width:100%; border-collapse:collapse; }
+th, td { border-bottom:1px solid #eee; padding:10px; text-align:left; }
+th { background:#fafafa; font-size:14px; }
+.money { font-variant-numeric: tabular-nums; text-align:right; font-weight:600; }
+.right { text-align:right; }
+.center { text-align:center; }
+.controls { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+button { padding:9px 12px; border:0; border-radius:9px; background:#6b5b53; color:#fff; cursor:pointer; }
+button.outline { background:#fff; color:#333; border:1px solid #ccc; }
+button.secondary { background:#3d3d3d; }
+button:hover { opacity:.95; }
+.catalog-row { display:grid; grid-template-columns: 1fr auto auto 240px; gap:8px; margin-top:8px; }
+@media (max-width: 900px){ .catalog-row { grid-template-columns: 1fr 1fr; } }
+@media print { .header{background:#fff;color:#000;border-bottom:2px solid #000;} .controls, .catalog-row{display:none !important} .block{border-color:#000} }

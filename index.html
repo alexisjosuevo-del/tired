@@ -1,0 +1,5559 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cotización Pago de Bolsillo — Sanaré</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.topbar { display:grid; grid-template-columns: 1.4fr 1fr; gap:16px; }
+.topbar .left { background:#fff; border:1px solid #e6e6e6; border-radius:10px; padding:12px; }
+.topbar .right { background:#fff; border:1px solid #e6e6e6; border-radius:10px; padding:12px; }
+.row { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+.row3 { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; }
+.kam { background:#d7c6bd33; border:1px solid #b49a8d; border-radius:8px; padding:8px; }
+.section-title { background:transparent; border-bottom:2px solid #111; }
+.table-wrap { margin-top:10px; }
+.catalog-row { display:grid; grid-template-columns: 1fr auto auto 260px; gap:8px; margin-top:10px; }
+@media (max-width: 900px){ .topbar { grid-template-columns: 1fr; } .catalog-row { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<header class="header">
+  <img src="logo.png" alt="Sanaré" class="logo">
+  <div>
+    <h1>COTIZACIÓN PAGO DE BOLSILLO</h1></div>
+</header>
+
+<div class="sheet">
+  <!-- Barra superior tipo hoja: dirección + campos de control -->
+  <div class="topbar">
+    <div class="left">
+      <div class="label">Dirección de la empresa</div>
+      <div id="dirText" class="small"></div>
+    </div>
+    <div class="right">
+      <div class="row">
+        <div><div class="label">Fecha</div><input id="fecha" type="date" class="input"></div>
+        <div><div class="label">Presupuesto válido hasta</div><input id="vigencia" type="date" class="input"></div>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <div><div class="label">Realizado por</div><input id="realizadoPor" class="input" placeholder="Nombre/área"></div>
+        <div><div class="label">KAM</div><input id="kam" class="input" placeholder="Nombre del KAM"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Datos del paciente -->
+  <div class="block">
+    <div class="section-title">Datos del paciente</div>
+    <div class="row3">
+      <div><div class="label">Nombre del paciente</div><input id="paciente" class="input" placeholder="Nombre completo"></div>
+      <div><div class="label">Nombre del médico</div><input id="medico" class="input" placeholder="Nombre del médico"></div>
+      <div><div class="label">Aseguradora</div><input id="aseguradora" class="input" value="PAGO DE BOLSILLO"></div>
+    </div>
+  </div>
+
+  <!-- Comentarios / DX y Esquema / KAM / Fecha de programación -->
+  <div class="block">
+    <div class="section-title">Comentarios o instrucciones especiales</div>
+    <textarea id="comentarios" class="textarea"></textarea>
+    <div class="row3" style="margin-top:10px">
+      <div><div class="label">Esquema o tratamiento</div><input id="esquema" class="input" placeholder="Ej. OXALIPLATINO"></div>
+      <div><div class="label">KAM</div><input id="kam2" class="input" placeholder="Corporativo / Nombre"></div>
+      <div><div class="label">Fecha de programación</div><input id="fechaProg" class="input" placeholder="Mes / Fecha"></div>
+    </div>
+  </div>
+
+  <!-- Medicamentos -->
+  <div class="block">
+    <div class="section-title">Medicamentos</div>
+    <!-- Encabezados arriba: la tabla va antes de los controles -->
+    <div class="table-wrap">
+      <table id="tablaMedicamentos">
+        <thead><tr><th>Medicamento</th><th class="center">Cantidad</th><th class="right">P. unitario</th><th class="right">Subtotal</th><th></th></tr></thead>
+        <tbody></tbody>
+        <tfoot><tr><td colspan="3" class="right"><strong>Subtotal Medicamentos</strong></td><td id="subtotalMedicamentos" class="money">0.00</td><td></td></tr></tfoot>
+      </table>
+    </div>
+    <!-- Menú desplegable + filtros a un lado (después de encabezados) -->
+    <div class="catalog-row">
+      <select id="medSel" class="select"></select>
+      <button class="outline" id="ordenAZ">A–Z</button>
+      <button class="outline" id="ordenPrecio">Precio (mayor→menor)</button>
+      <input id="medCombo" list="medList" class="input" placeholder="Buscar por código o nombre…">
+      <datalist id="medList"></datalist>
+    </div>
+    <div class="controls" style="margin-top:8px">
+      <input id="medPrecio" class="number" type="number" step="0.01" placeholder="P. unitario">
+      <input id="medCant" class="number" type="number" step="1" min="1" value="1">
+      <button id="agregarMed">Agregar medicamento</button>
+    </div>
+  </div>
+
+  <!-- Servicios -->
+  <div class="block">
+    <div class="section-title">Servicios</div>
+    <div class="table-wrap">
+      <table id="tablaServicios">
+        <thead><tr><th>Servicio</th><th class="center">Cantidad</th><th class="right">P. unitario</th><th class="right">Subtotal</th><th></th></tr></thead>
+        <tbody></tbody>
+        <tfoot><tr><td colspan="3" class="right"><strong>Subtotal Servicios</strong></td><td id="subtotalServicios" class="money">0.00</td><td></td></tr></tfoot>
+      </table>
+    </div>
+    <div class="controls" style="margin-top:8px">
+      <select id="servicioSel" class="select"></select>
+      <input id="servicioPrecio" class="number" type="number" step="0.01" placeholder="Precio">
+      <input id="servicioCant" class="number" type="number" step="1" min="1" value="1">
+      <button id="agregarServicio">Agregar servicio</button>
+    </div>
+  </div>
+
+  <!-- Totales -->
+  <div class="block">
+    <div class="section-title">Totales</div>
+    <div class="controls">
+      <div><strong>IVA (Servicios 16%)</strong>: <span id="iva" class="money">0.00</span></div>
+      <div style="margin-left:auto"><strong>TOTAL</strong>: <span id="total" class="money">0.00</span></div>
+      <button id="exportar" class="secondary">Exportar JSON</button>
+      <button id="exportarPDF" class="secondary">Exportar PDF</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Inyección inline (misma base de datos) -->
+<script id="__data" type="application/json">{}</script>
+<script src="app.js"></script>
+<script>
+  // Cargar también __DATA__ con la misma data del data.json (inyectado por Python a continuación)
+  document.getElementById('__data').textContent = JSON.stringify({
+  "medicamentos": [
+    {
+      "codigo": 7501082243536,
+      "descripcion": "ABEMACICLIB 150MG CAJ C/56 TAB(VERZENIO)",
+      "COSTO DEMSA": 74003.0,
+      "PMP DEMSA": 86167
+    },
+    {
+      "codigo": 7501165002784,
+      "descripcion": "RILUTEK 50MG C/56 TABLETAS",
+      "COSTO DEMSA": 18499.0,
+      "PMP DEMSA": 25915
+    },
+    {
+      "codigo": 7501109930562,
+      "descripcion": "ABIRATERONA 500MG CAJ C/60 TAB(ZYTIGA)",
+      "COSTO DEMSA": 115944.98,
+      "PMP DEMSA": 115944.98
+    },
+    {
+      "codigo": 5000456055178,
+      "descripcion": "ACALABRUTINIB 100MG CAJ C/56 TAB(CALQUENCE)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501046488973,
+      "descripcion": "ACICLOVIR 200MG CAJ C/25 TAB(ZOVIRAX DISPER)",
+      "COSTO DEMSA": 819.0,
+      "PMP DEMSA": 1171.69
+    },
+    {
+      "codigo": 7501046490013,
+      "descripcion": "ACICLOVIR 400MG CAJ C/35 TAB(ZOVIRAX DISPER)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501125126048,
+      "descripcion": "ACICLOVIR 400MG CAJ C/35 TAB(ISAVIR)",
+      "COSTO DEMSA": 764.0,
+      "PMP DEMSA": 938
+    },
+    {
+      "codigo": 7501299300794,
+      "descripcion": "ACICLOVIR 400MG CAJ C/35 TAB(CICLOFERON)",
+      "COSTO DEMSA": 847.13,
+      "PMP DEMSA": 1442
+    },
+    {
+      "codigo": 7501446000553,
+      "descripcion": "ACIDO FOLICO 5MG CAJ C/50 TAB(ACIDO FOLICO)",
+      "COSTO DEMSA": 49.0,
+      "PMP DEMSA": 69
+    },
+    {
+      "codigo": 7237079290916,
+      "descripcion": "ACIDO FOLINICO 50MG/4ML CAJ C/1 FA(FOCIDAT)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": 0
+    },
+    {
+      "codigo": 7501125165573,
+      "descripcion": "ACIDO FOLINICO 50MG/4ML CAJ C/1 FA(INNEFOL)",
+      "COSTO DEMSA": 407.0,
+      "PMP DEMSA": 430.94
+    },
+    {
+      "codigo": 7501094916268,
+      "descripcion": "ACIDO ZOLEDRONICO 5MG/100ML CAJ C/1 FA(ACLASTA)",
+      "COSTO DEMSA": 11397.0,
+      "PMP DEMSA": 13482.34
+    },
+    {
+      "codigo": 7501124811211,
+      "descripcion": "ACIDO ZOLEDRONICO 4MG/5ML CAJ C/1 FA(ZOMETA)",
+      "COSTO DEMSA": 6829.0,
+      "PMP DEMSA": 7910.74
+    },
+    {
+      "codigo": 7501299342015,
+      "descripcion": "ACIDO ZOLEDRONICO 4MG/5ML CAJ C/1 FA(ZOLNIC)",
+      "COSTO DEMSA": 4355.0,
+      "PMP DEMSA": 5286
+    },
+    {
+      "codigo": 7502223555082,
+      "descripcion": "ACIDO ZOLEDRONICO 4MG/5ML CAJ C/1 FA(LEZOMIV)",
+      "COSTO DEMSA": 620.0,
+      "PMP DEMSA": 4641
+    },
+    {
+      "codigo": 7506335700552,
+      "descripcion": "ACIDO ZOLEDRONICO 4MG/5ML CAJ C/1 FA(OXFON)",
+      "COSTO DEMSA": 846.15,
+      "PMP DEMSA": 5000
+    },
+    {
+      "codigo": 7506442701077,
+      "descripcion": "ACIDO ZOLEDRONICO 4MG/5ML CAJ C/1 FA(PRISHA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501165009417,
+      "descripcion": "AFLIBERCEPT 100MG/4ML CAJ C/1 FA(ZALTRAP ZIV)",
+      "COSTO DEMSA": 14889.0,
+      "PMP DEMSA": 16079
+    },
+    {
+      "codigo": 7506404300195,
+      "descripcion": "ALBUMINA HUMANA 10MG/50ML CAJ C/1 FA(ALBUMINA HUMANA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7613326004930,
+      "descripcion": "ALECTINIB 150MG CAJ C/56 CAP(ALECENSA)",
+      "COSTO DEMSA": 125801.0,
+      "PMP DEMSA": 127795
+    },
+    {
+      "codigo": 5000283660910,
+      "descripcion": "ALEMTUZUMAB 12MG/1.2ML CAJ C/1 FA(LEMTRADA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502209291249,
+      "descripcion": "ALMAGATO 1.5G/15ML CAJ C/24 SOB(ALMAX)",
+      "COSTO DEMSA": 280.0,
+      "PMP DEMSA": 386.48
+    },
+    {
+      "codigo": 7502253072924,
+      "descripcion": "ALOPURINOL 300MG CAJ C/30 TAB(ZYLOPRIM)",
+      "COSTO DEMSA": 832.0,
+      "PMP DEMSA": 1163.32
+    },
+    {
+      "codigo": 7501384502263,
+      "descripcion": "ALPRAZOLAM 2MG CAJ C/30 TAB(ALZAM)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501384503123,
+      "descripcion": "AMITRIPTILINA 25MG CAJ C/50 TAB(ANAPSIQUE)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501384503116,
+      "descripcion": "AMITRIPTILINA 50MG CAJ C/20 TAB(ANAPSIQUE)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502216793675,
+      "descripcion": "AMLODIPINO 5MG CAJ C/30 TAB(AMLODIPINO)",
+      "COSTO DEMSA": 18.0,
+      "PMP DEMSA": 293.7
+    },
+    {
+      "codigo": 7501125164354,
+      "descripcion": "ADENOSINA 6MG/5ML CAJ C/6(PISDENO)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501125169540,
+      "descripcion": "AMIODARONA 150MG/3ML CAJ C/6 FA(CIRTRENT)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501324403704,
+      "descripcion": "ANASTROZOL 1MG CAJ C/14 TAB(ARIMIDEX)",
+      "COSTO DEMSA": 2248.0,
+      "PMP DEMSA": 2516
+    },
+    {
+      "codigo": 7501324403711,
+      "descripcion": "ANASTROZOL 1MG CAJ C/28 TAB(ARIMIDEX)",
+      "COSTO DEMSA": 4370.0,
+      "PMP DEMSA": 4888
+    },
+    {
+      "codigo": 7502223555020,
+      "descripcion": "ANASTROZOL 1MG CAJ C/28 TAB(MAGEMIV)",
+      "COSTO DEMSA": 2601.0,
+      "PMP DEMSA": 4435
+    },
+    {
+      "codigo": 7500463184529,
+      "descripcion": "ANASTROZOL 1MG CAJ C/28 TAB(POSCIROL)",
+      "COSTO DEMSA": 782.0,
+      "PMP DEMSA": 1798
+    },
+    {
+      "codigo": 7500463184536,
+      "descripcion": "ANASTROZOL 1MG CAJ C/14 TAB(POSCIROL)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": "7501125101106 ",
+      "descripcion": "TRINITRATO DE GLICERILO 50MG/50ML CAJ C/1 FA(ANGIOPOHL)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502216935389,
+      "descripcion": "RITUXIMAB 100MG/10ML CAJ C/2 FA(ARASAMILA)",
+      "COSTO DEMSA": 9691.0,
+      "PMP DEMSA": 12694.28
+    },
+    {
+      "codigo": 7502216935372,
+      "descripcion": "RITUXIMAB 500MG/50ML CAJ C/1 FA(ARASAMILA)",
+      "COSTO DEMSA": 21369.0,
+      "PMP DEMSA": 31722.75
+    },
+    {
+      "codigo": 75005023,
+      "descripcion": "L-ASPARAGINASA 10000UI/10ML CAJ C/1 FA(LEUNASE)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7613326004947,
+      "descripcion": "ATEZOLIZUMAB 1200MG/20ML CAJ C/1 FA(TECENTRIQ)",
+      "COSTO DEMSA": 123017.0,
+      "PMP DEMSA": 124966
+    },
+    {
+      "codigo": 7501125124365,
+      "descripcion": "ATROPINA 1MG/1ML CAJ C/1 FA(ATROPISA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 4054839462023,
+      "descripcion": "AVELUMAB 200MG/10ML CAJ C/1 FA(BAVENCIO)",
+      "COSTO DEMSA": 25636.0,
+      "PMP DEMSA": 29772.26
+    },
+    {
+      "codigo": 7501287609724,
+      "descripcion": "AXITINIB 5MG CAJ C/60 TAB(INLYTA)",
+      "COSTO DEMSA": 70204.9,
+      "PMP DEMSA": 136342.56
+    },
+    {
+      "codigo": 7501287609717,
+      "descripcion": "AXITINIB 1MG CAJ C/180 TAB(INLYTA)",
+      "COSTO DEMSA": 42512.96,
+      "PMP DEMSA": 82563
+    },
+    {
+      "codigo": 7730979094566,
+      "descripcion": "AZACITIDINA 100MG/4ML CAJ C/1 FA(VIDAZA)",
+      "COSTO DEMSA": 11547.0,
+      "PMP DEMSA": 11730
+    },
+    {
+      "codigo": 7501043100496,
+      "descripcion": "BELIMUMAB 120MG/5ML CAJ C/1 FA(BENLYSTIA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501043100489,
+      "descripcion": "BELIMUMAB 400MG/8ML CAJ C/1 FA(BENLYSTIA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501109929313,
+      "descripcion": "BENDAMUSTINA 25MG/10ML CAJ C/1 FA(RIBOBUSTAN)",
+      "COSTO DEMSA": 6943.33,
+      "PMP DEMSA": 6943.33
+    },
+    {
+      "codigo": 7501559610007,
+      "descripcion": "BENDAMUSTINA 100MG/4ML CAJ C/1 FA(GLINDEKA)",
+      "COSTO DEMSA": 7848.0,
+      "PMP DEMSA": 10923.01
+    },
+    {
+      "codigo": 7613326005449,
+      "descripcion": "BEVACIZUMAB 100mg/4ML CAJ C/1 FA(AVASTIN)",
+      "COSTO DEMSA": 14577.0,
+      "PMP DEMSA": 14808
+    },
+    {
+      "codigo": 7613326005456,
+      "descripcion": "BEVACIZUMAB 400mg/16ML CAJ C/1 FA(AVASTIN)",
+      "COSTO DEMSA": 53237.0,
+      "PMP DEMSA": 54081
+    },
+    {
+      "codigo": 7501324402820,
+      "descripcion": "BICALUTAMIDA 50MG CAJ C/28 TAB(CASODEX)",
+      "COSTO DEMSA": 4326.0,
+      "PMP DEMSA": 4867
+    },
+    {
+      "codigo": 7501324472137,
+      "descripcion": "BICALUTAMIDA 150MG CAJ C/28 TAB(CASODEX)",
+      "COSTO DEMSA": 7927.0,
+      "PMP DEMSA": 8869
+    },
+    {
+      "codigo": 7501125112034,
+      "descripcion": "BICARBONATO DE SODIO 0.75MG/10ML CAJ C/1 FA(BICARNAT 7.5%)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501125112034,
+      "descripcion": "BICARBONATO DE SODIO 3.75MG/50ML CAJ C/1 FA(BICARNAT 7.5%)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501476078386,
+      "descripcion": "BLEOMICINA 15UI/5ML CAJ C/1 FA(BLEOMAX)",
+      "COSTO DEMSA": 2140.0,
+      "PMP DEMSA": 5000
+    },
+    {
+      "codigo": 7502223556003,
+      "descripcion": "BORTEZOMIB 3.5MG/3.5ML CAJ C/1 FA(ELOMAZIV)",
+      "COSTO DEMSA": 15955.0,
+      "PMP DEMSA": 36750
+    },
+    {
+      "codigo": 7506429600133,
+      "descripcion": "BORTEZOMIB 3.5MG/3.5ML CAJ C/1 FA(BEMONCAZ)",
+      "COSTO DEMSA": 2616.0,
+      "PMP DEMSA": 21120
+    },
+    {
+      "codigo": 5035382010441,
+      "descripcion": "BRENTUXIMAB 50MG/10ML CAJ C/1 FA(ADCETRIS)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501125192272,
+      "descripcion": "BUPRENORFINA 0.3MG/1ML CAJ C/6 FA(BROSPINA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502209290518,
+      "descripcion": "BUPRENORFINA 30MG CAJ C/4 PARCHE(TRANSTEC)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502209290822,
+      "descripcion": "BUPRENORFINA 5MG CAJ C/2 PARCHE(SOLORO 7)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502209290860,
+      "descripcion": "BUPRENORFINA 10MG CAJ C/4 PARCHE(SOLORO 7)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502209290532,
+      "descripcion": "BUPRENORFINA 20MG CAJ C/2 PARCHE(TRANSTEC)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501165011557,
+      "descripcion": "BUTILHIOSCINA 20MG/1ML CAJ C/3 FA(BUSCAPINA)",
+      "COSTO DEMSA": 246.0,
+      "PMP DEMSA": 343.47
+    },
+    {
+      "codigo": 7501065001337,
+      "descripcion": "COLECALCIFEROL/VITAMINA D3/CALCIO 600/400MG CAJ C/30(CALTRATE 600 + D)",
+      "COSTO DEMSA": 141.0,
+      "PMP DEMSA": 184.22
+    },
+    {
+      "codigo": 7501065001634,
+      "descripcion": "COLECALCIFEROL/VITAMINA D3/CALCIO 600/400MG CAJ C/60(CALTRATE 600 + D)",
+      "COSTO DEMSA": 246.0,
+      "PMP DEMSA": 352.61
+    },
+    {
+      "codigo": 7501065002334,
+      "descripcion": "COLECALCIFEROL/VITAMINA D3/CALCIO/MINERALES 600/4000MG CAJ C/30(CALTRATE 600 + M)",
+      "COSTO DEMSA": 156.0,
+      "PMP DEMSA": 223.02
+    },
+    {
+      "codigo": 7501065002631,
+      "descripcion": "COLECALCIFEROL/VITAMINA D3/CALCIO/MINERALES 600/4000MG CAJ C/60(CALTRATE 600 + M)",
+      "COSTO DEMSA": 263.0,
+      "PMP DEMSA": 384.46
+    },
+    {
+      "codigo": 7613326005135,
+      "descripcion": "CAPECITABINA 500MG CAJ C/120 TAB(XELODA)",
+      "COSTO DEMSA": 32140.0,
+      "PMP DEMSA": 32649
+    },
+    {
+      "codigo": 7506335700798,
+      "descripcion": "CAPECITABINA 500MG CAJ C/120 TAB(SKEMCA)",
+      "COSTO DEMSA": 2299.0,
+      "PMP DEMSA": 25000
+    },
+    {
+      "codigo": 7501559606420,
+      "descripcion": "CAPECITABINA 500MG CAJ C/120 TAB(PLEXODA)",
+      "COSTO DEMSA": 2996.0,
+      "PMP DEMSA": 15437
+    },
+    {
+      "codigo": 7501101640049,
+      "descripcion": "CAPTOPRIL 25MG CAJ C/30 TAB(CAPTRAL)",
+      "COSTO DEMSA": 502.0,
+      "PMP DEMSA": 756
+    },
+    {
+      "codigo": 7501385491467,
+      "descripcion": "CAPTOPRIL 25MG CAJ C/30 TAB(CAPTOPRIL)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7506335700392,
+      "descripcion": "CARBOPLATINO 150MG/15ML CAJ C/1 FA(NUVAPLAST 150)",
+      "COSTO DEMSA": 353.0,
+      "PMP DEMSA": 1650
+    },
+    {
+      "codigo": 7506335700408,
+      "descripcion": "CARBOPLATINO 450MG/45ML CAJ C/1 FA(NUVAPLAST 450)",
+      "COSTO DEMSA": 706.0,
+      "PMP DEMSA": 3300
+    },
+    {
+      "codigo": 8901038410620,
+      "descripcion": "CARBOPLATINO 150MG/15ML CAJ C/1 FA(KEMOCARB)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 3582180000317,
+      "descripcion": "CABOZANTINIB 40MG CAJ C/30 TAB(APTIMETYX)",
+      "COSTO DEMSA": 159213.0,
+      "PMP DEMSA": 446390.28
+    },
+    {
+      "codigo": 8715131009601,
+      "descripcion": "CARFILZOMIB 60MG/30ML CAJ C/1 FA(KYPROLIS)",
+      "COSTO DEMSA": 25505.0,
+      "PMP DEMSA": 25909.4
+    },
+    {
+      "codigo": 7501088508288,
+      "descripcion": "CETIRIZINA 10MG CAJ C/10 TAB(VIRLIX)",
+      "COSTO DEMSA": 323.0,
+      "PMP DEMSA": 471
+    },
+    {
+      "codigo": 7501298217567,
+      "descripcion": "CETUXIMAB 100MG/20ML CAJ C/1 FA(ERBITUX)",
+      "COSTO DEMSA": 9255.0,
+      "PMP DEMSA": 10465.26
+    },
+    {
+      "codigo": 7501314701827,
+      "descripcion": "CIPROFLOXACINO 500MG CAJ C/12 TAB(CIPROFLOX)",
+      "COSTO DEMSA": 587.0,
+      "PMP DEMSA": 760
+    },
+    {
+      "codigo": 7501314701834,
+      "descripcion": "CIPROFLOXACINO 500MG CAJ C/6 TAB(CIPROFLOX)",
+      "COSTO DEMSA": 338.0,
+      "PMP DEMSA": 440
+    },
+    {
+      "codigo": 7501314701858,
+      "descripcion": "CIPROFLOXACINO 200MG/100ML CAJ C/1 FA(CIPROFLOX)",
+      "COSTO DEMSA": 414.0,
+      "PMP DEMSA": 540
+    },
+    {
+      "codigo": 7501314701865,
+      "descripcion": "CIPROFLOXACINO 250MG CAJ C/12 TAB(CIPROFLOX)",
+      "COSTO DEMSA": 349.0,
+      "PMP DEMSA": 470
+    },
+    {
+      "codigo": 7501314701872,
+      "descripcion": "CIPROFLOXACINO 400MG/200ML CAJ C/1 FA(CIPROFLOX)",
+      "COSTO DEMSA": 800.0,
+      "PMP DEMSA": 1050
+    },
+    {
+      "codigo": 7501314701889,
+      "descripcion": "CIPROFLOXACINO 1G CAJ C/7 TAB(CIPROFLOX)",
+      "COSTO DEMSA": 729.0,
+      "PMP DEMSA": 900
+    },
+    {
+      "codigo": 7506335700217,
+      "descripcion": "CISPLATINO 10MG/10ML CAJ C/1 FA(ACCOCIT)",
+      "COSTO DEMSA": 128.0,
+      "PMP DEMSA": 600
+    },
+    {
+      "codigo": 7506335700224,
+      "descripcion": "CISPLATINO 50MG/50ML CAJ C/1 FA(ACCOCIT)",
+      "COSTO DEMSA": 214.0,
+      "PMP DEMSA": 1000
+    },
+    {
+      "codigo": 7503006916083,
+      "descripcion": "CITALOPRAM 20MG CAJ C/28 TAB(CITOX)",
+      "COSTO DEMSA": 1073.0,
+      "PMP DEMSA": 1277
+    },
+    {
+      "codigo": 7502251890285,
+      "descripcion": "CITARABINA 500MG/10ML CAJ C/1 FA(ZUPHACIT)",
+      "COSTO DEMSA": 642.0,
+      "PMP DEMSA": 1750
+    },
+    {
+      "codigo": 300090473013,
+      "descripcion": "CITARABINA 500MG/10ML CAJ C/1 FA(CYTOSAR-U)",
+      "COSTO DEMSA": 440.0,
+      "PMP DEMSA": 820.56
+    },
+    {
+      "codigo": 4054839003509,
+      "descripcion": "CLADRIBINA 10MG CAJ C/1 TAB(MAVENCLAD)",
+      "COSTO DEMSA": 91862.0,
+      "PMP DEMSA": 107109
+    },
+    {
+      "codigo": 367457450100,
+      "descripcion": "CLADRIBINA 10MG/10ML CAJ C/1 FA(CLADRIBINE)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501300409881,
+      "descripcion": "CLONIXINATO DE LISINA 125MG CAJ C/10 TAB(DORIXINA)",
+      "COSTO DEMSA": 259.0,
+      "PMP DEMSA": 365
+    },
+    {
+      "codigo": 7502253073648,
+      "descripcion": "CLORAMBUCILO 2MG CAJ C/25 TAB(LEUKERAN)",
+      "COSTO DEMSA": 1344.0,
+      "PMP DEMSA": 1769.95
+    },
+    {
+      "codigo": 7506429600317,
+      "descripcion": "EPIRUBICINA 10MG/5ML CAJ C/1 FA(PAPLUF)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502216807037,
+      "descripcion": "GEMCITABINA 1G/25ML CAJ C/1 FA(ULDEUS)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502216930414,
+      "descripcion": "CLOROPIRAMINA 25MG CAJ C/20 TAB(AVAPENA)",
+      "COSTO DEMSA": 218.0,
+      "PMP DEMSA": 324.13
+    },
+    {
+      "codigo": 7502216930599,
+      "descripcion": "CLOROPIRAMINA 20MG/2ML CAJ C/5 AMP(AVAPENA)",
+      "COSTO DEMSA": 270.0,
+      "PMP DEMSA": 401.37
+    },
+    {
+      "codigo": 7501082243383,
+      "descripcion": "RAMUCIRUMAB 100MG/10ML CAJ C/1 FA(CYRAMZA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 6332312820,
+      "descripcion": "DACARBAZINA 200MG/10ML CAJ C/1 FA(DACARBAZINE)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 8901708003787,
+      "descripcion": "DACARBAZINA 200MG/10ML CAJ C/1 FA(DACARBAZINA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 3663502001028,
+      "descripcion": "DACTINOMICINA 0.5MG/1ML CAJ C/1 FA(COSMEGEN)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 5000456076692,
+      "descripcion": "DAPAGLIFLOZINA 10MG CAJ C/28 TAB(FORXIGA)",
+      "COSTO DEMSA": 1585.0,
+      "PMP DEMSA": 2256
+    },
+    {
+      "codigo": 8715131005542,
+      "descripcion": "DARBEPOETINA ALFA 30MCG/0.3ML CAJ C/4 FA(ARANESP)",
+      "COSTO DEMSA": 4588.0,
+      "PMP DEMSA": 4660.57
+    },
+    {
+      "codigo": 8715131005559,
+      "descripcion": "DARBEPOETINA ALFA 40MCG/0.4ML CAJ C/4 FA(ARANESP)",
+      "COSTO DEMSA": 6117.0,
+      "PMP DEMSA": 6213.76
+    },
+    {
+      "codigo": 8715131005566,
+      "descripcion": "DARBEPOETINA ALFA 60MCG/0.3ML CAJ C/4 FA(ARANESP)",
+      "COSTO DEMSA": 9175.0,
+      "PMP DEMSA": 9320.64
+    },
+    {
+      "codigo": 8715131005580,
+      "descripcion": "DARBEPOETINA ALFA 300MCG/0.6ML CAJ C/1 FA(ARANESP)",
+      "COSTO DEMSA": 11082.0,
+      "PMP DEMSA": 11257.65
+    },
+    {
+      "codigo": 8715131005597,
+      "descripcion": "DARBEPOETINA ALFA 500MCG/1ML CAJ C/1 FA(ARANESP)",
+      "COSTO DEMSA": 19394.0,
+      "PMP DEMSA": 19700.88
+    },
+    {
+      "codigo": 8715131007874,
+      "descripcion": "DARBEPOETINA ALFA 80MCG/0.4ML CAJ C/1 FA(ARANESP)",
+      "COSTO DEMSA": 3058.0,
+      "PMP DEMSA": 3106.88
+    },
+    {
+      "codigo": 7501233210011,
+      "descripcion": "DASATINIB 70MG CAJ C/60 TAB(SPRYCEL)",
+      "COSTO DEMSA": 85403.0,
+      "PMP DEMSA": 88683.86
+    },
+    {
+      "codigo": 7502251890711,
+      "descripcion": "DAUNORUBICINA 20MG/4ML CAJ C/1 FA(ZULEB)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501125163463,
+      "descripcion": "DEXAMETASONA 8MG/2ML CAJ C/1 FA(DECOREX)",
+      "COSTO DEMSA": 40.0,
+      "PMP DEMSA": 56.7
+    },
+    {
+      "codigo": 7640180266358,
+      "descripcion": "DEGARELIX 80MG/4.2ML CAJ C/1 FA(FIRMAGON)",
+      "COSTO DEMSA": 4329.0,
+      "PMP DEMSA": 6608
+    },
+    {
+      "codigo": 7640180266341,
+      "descripcion": "DEGARELIX 120MG/3ML CAJ C/ FA(FIRMAGON)",
+      "COSTO DEMSA": 7418.0,
+      "PMP DEMSA": 11323
+    },
+    {
+      "codigo": 8715131006303,
+      "descripcion": "DENOSUMAB 60MG/1ML CAJ C/1 FA(PROLIA)",
+      "COSTO DEMSA": 10388.0,
+      "PMP DEMSA": 10552.4
+    },
+    {
+      "codigo": 8715131006976,
+      "descripcion": "DENOSUMAB 120MG/1.7ML CAJ C/1 FA(XGEVA)",
+      "COSTO DEMSA": 10662.0,
+      "PMP DEMSA": 10831.43
+    },
+    {
+      "codigo": 7501108767923,
+      "descripcion": "DESVENLAFAXINA 100MG CAJ C/28 TAB(PRISTIQ)",
+      "COSTO DEMSA": 1902.0,
+      "PMP DEMSA": 2794.95
+    },
+    {
+      "codigo": 7501108767893,
+      "descripcion": "DESVENLAFAXINA 50MG CAJ C/28 TAB(PRISTIQ)",
+      "COSTO DEMSA": 1642.0,
+      "PMP DEMSA": 2412.5
+    },
+    {
+      "codigo": 7501088505003,
+      "descripcion": "DEXAMETASONA 8MG/2ML CAJ C/1 FA(ALIN)",
+      "COSTO DEMSA": 67.0,
+      "PMP DEMSA": 99.14
+    },
+    {
+      "codigo": 7501088505157,
+      "descripcion": "DEXAMETASONA 4MG/1ML CAJ C/1 FA(ALIN DEPOT)",
+      "COSTO DEMSA": 192.0,
+      "PMP DEMSA": 280.22
+    },
+    {
+      "codigo": 7501088505607,
+      "descripcion": "DEXAMETASONA 0.5MG CAJ C/30 TAB(ALIN)",
+      "COSTO DEMSA": 80.0,
+      "PMP DEMSA": 115.69
+    },
+    {
+      "codigo": 7501088505706,
+      "descripcion": "DEXAMETASONA 0.75MG CAJ C/30 TAB(ALIN)",
+      "COSTO DEMSA": 88.0,
+      "PMP DEMSA": 124.76
+    },
+    {
+      "codigo": 7501125177569,
+      "descripcion": "DEXAMETASONA 4MG CAJ C/10 TAB(DECOREX)",
+      "COSTO DEMSA": 79.0,
+      "PMP DEMSA": 108
+    },
+    {
+      "codigo": 7501125177576,
+      "descripcion": "DEXAMETASONA 6MG CAJ C/10 TAB(DEXAMETASONA)",
+      "COSTO DEMSA": 114.0,
+      "PMP DEMSA": 155
+    },
+    {
+      "codigo": 7501125177576,
+      "descripcion": "DEXAMETASONA 6MG CAJ C/10 TAB(DECOREX)",
+      "COSTO DEMSA": 114.0,
+      "PMP DEMSA": 155
+    },
+    {
+      "codigo": 7501349027329,
+      "descripcion": "DEXAMETASONA 8MG/2ML CAJ C/1 FA(DEXAMETASONA)",
+      "COSTO DEMSA": 13.0,
+      "PMP DEMSA": 47.15
+    },
+    {
+      "codigo": 7501092722106,
+      "descripcion": "DEXLANSOPRAZOL 60MG CAJ C/7 CAP(DEXIVANT)",
+      "COSTO DEMSA": 538.0,
+      "PMP DEMSA": 729
+    },
+    {
+      "codigo": 7501092722113,
+      "descripcion": "DEXLANSOPRAZOL 60MG CAJ C/14 TAB(DEXIVANT)",
+      "COSTO DEMSA": 865.0,
+      "PMP DEMSA": 1236
+    },
+    {
+      "codigo": 7501092722120,
+      "descripcion": "DEXLANSOPRAZOL 30MG CAJ C/14 CAP(DEXIVANT)",
+      "COSTO DEMSA": 562.0,
+      "PMP DEMSA": 786
+    },
+    {
+      "codigo": 7501871730414,
+      "descripcion": "DEXROZANO 500MG/25ML CAJ C/1 FA(CARDIOXANE)",
+      "COSTO DEMSA": 6968.0,
+      "PMP DEMSA": 8140.06
+    },
+    {
+      "codigo": 7501125170867,
+      "descripcion": "DIAZEPAM 10MG/2ML CAJ C/6 FA(RELAZEPAM)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502253073211,
+      "descripcion": "DIFENHIDRAMINA 50MG CAJ C/8 TAB(NYTOL)",
+      "COSTO DEMSA": 178.0,
+      "PMP DEMSA": 276.59
+    },
+    {
+      "codigo": 7702134108104,
+      "descripcion": "DIFENHIDRAMINA 250MG/100ML CAJ C/1 FRA(BENADRYL)",
+      "COSTO DEMSA": 127.0,
+      "PMP DEMSA": 184.2
+    },
+    {
+      "codigo": 7501007531601,
+      "descripcion": "DIFENHIDRAMINA 25MG CAJ C/24 TAB(BENADRYL)",
+      "COSTO DEMSA": 138.0,
+      "PMP DEMSA": 192.1
+    },
+    {
+      "codigo": 7501070635718,
+      "descripcion": "DIFENIDOL 40MG/2ML CAJ C/2(VONTROL)",
+      "COSTO DEMSA": 165.0,
+      "PMP DEMSA": 241
+    },
+    {
+      "codigo": 7501125169601,
+      "descripcion": "DIGOXINA 0.5MG/2ML CAJ C/6 FA(DIGOXINA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501092793052,
+      "descripcion": "DIMETICONA 80/10MG/10ML CAJ C/20 SOB(RIOPAN)",
+      "COSTO DEMSA": 135.0,
+      "PMP DEMSA": 193
+    },
+    {
+      "codigo": 7501033954580,
+      "descripcion": "ISOSORBIDA 10MG/10ML CAJ C/10(ISOKET)",
+      "COSTO DEMSA": 923.0,
+      "PMP DEMSA": 1184.4
+    },
+    {
+      "codigo": 7501125186875,
+      "descripcion": "DOBUTAMINA 250MG/5ML CAJ C/5 FA(DOBUJECT)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501493874718,
+      "descripcion": "DOBUTAMINA 250MG/20ML CAJ C/1 FA(CORBUSIN)",
+      "COSTO DEMSA": 229.0,
+      "PMP DEMSA": 540
+    },
+    {
+      "codigo": 7501165009967,
+      "descripcion": "DOCETAXEL 20MG/4ML CAJ C/1 AMP(TAXOTERE)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501165009974,
+      "descripcion": "DOCETAXEL 80MG/1ML CAJ C/1 FA(TAXOTERE)",
+      "COSTO DEMSA": 28093.0,
+      "PMP DEMSA": 31569
+    },
+    {
+      "codigo": 7502223556317,
+      "descripcion": "DOCETAXEL 20MG/1ML CAJ C/1 FA(DATILEV)",
+      "COSTO DEMSA": 3682.0,
+      "PMP DEMSA": 5775
+    },
+    {
+      "codigo": 7502223556324,
+      "descripcion": "DOCETAXEL 80MG/4ML CAJ C/1 FA(DATILEV)",
+      "COSTO DEMSA": 14134.0,
+      "PMP DEMSA": 19950
+    },
+    {
+      "codigo": 7502254000353,
+      "descripcion": "DOCETAXEL 20MG/1ML CAJ C/1 FA(TAXANIT)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7506335700071,
+      "descripcion": "DOCETAXEL 80MG/2ML CAJ C/1 FA(TAXANIT)",
+      "COSTO DEMSA": 4815.0,
+      "PMP DEMSA": 22500
+    },
+    {
+      "codigo": 7506429600065,
+      "descripcion": "DOCETAXEL 20MG/1.5ML CAJ C/1 FA(MIOCERKEL)",
+      "COSTO DEMSA": 1338.0,
+      "PMP DEMSA": 4704
+    },
+    {
+      "codigo": 7506429600072,
+      "descripcion": "DOCETAXEL 80MG/6ML CAJ C/1 FA(MIOCERKEL)",
+      "COSTO DEMSA": 1598.75,
+      "PMP DEMSA": 16800
+    },
+    {
+      "codigo": 7501109901081,
+      "descripcion": "DOMPERIDONA 10MG CAJ C/30 TAB(MOTILIUM)",
+      "COSTO DEMSA": 575.0,
+      "PMP DEMSA": 1000
+    },
+    {
+      "codigo": 7501125115561,
+      "descripcion": "DOPAMINA 200MG/5ML CAJ C/5 FA(INOTROPISA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501287612809,
+      "descripcion": "DOXORUBICINA 10MG/5ML CAJ C/ 1 FA(ADRIBLASTINA RD)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501287612854,
+      "descripcion": "DOXORUBICINA 50MG/25ML CAJ C/1 FA(ADRIBLASTINA RD)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502251890148,
+      "descripcion": "DOXORUBICINA 10MG/5ML CAJ C/1 FA(ZUCLODOX)",
+      "COSTO DEMSA": 382.0,
+      "PMP DEMSA": 965
+    },
+    {
+      "codigo": 7502251890155,
+      "descripcion": "DOXORUBICINA 50MG/25ML CAJ C/1 FA(ZUCLODOX)",
+      "COSTO DEMSA": 556.0,
+      "PMP DEMSA": 1450
+    },
+    {
+      "codigo": 7501871711208,
+      "descripcion": "DOXORUBICINA PEGILADA 20MG/10ML CAJ C/1 FA(DOXOPEG)",
+      "COSTO DEMSA": 14337.0,
+      "PMP DEMSA": 16748.36
+    },
+    {
+      "codigo": 7501082243376,
+      "descripcion": "DULOXETINA 30MG CAJ C/28 TAB(CYMBALTA)",
+      "COSTO DEMSA": 2138.0,
+      "PMP DEMSA": 2697
+    },
+    {
+      "codigo": 5000456054928,
+      "descripcion": "DURVALUMAB 120MG/2.4ML CAJ C/1 FA(IMFINZIO)",
+      "COSTO DEMSA": 17472.0,
+      "PMP DEMSA": 18459
+    },
+    {
+      "codigo": 5000456054911,
+      "descripcion": "DURVALUMAB 500MG/10ML CAJ C/1 FA(IMFINZIO)",
+      "COSTO DEMSA": 72793.0,
+      "PMP DEMSA": 76906
+    },
+    {
+      "codigo": 5391527740735,
+      "descripcion": "ECULIZUMAB 300MG/30ML CAJ C/1 FA(SOLIRIS)",
+      "COSTO DEMSA": 109600.0,
+      "PMP DEMSA": 109600
+    },
+    {
+      "codigo": 7501072350299,
+      "descripcion": "ENOXAPARINA 60MG/0.6ML CAJ C/2 JPRE(CLEXANE)",
+      "COSTO DEMSA": 2139.0,
+      "PMP DEMSA": 3115
+    },
+    {
+      "codigo": 7500464605924,
+      "descripcion": "ENZALUTAMIDA 40MG CAJ C/120 TAB(XTANDI)",
+      "COSTO DEMSA": 89858.0,
+      "PMP DEMSA": 100779
+    },
+    {
+      "codigo": 7501142913027,
+      "descripcion": "EPIRUBICINA 50MG CAJ C/1 FA(FARMORUBICIN RD)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502251890131,
+      "descripcion": "EPIRUBICINA 50MG/25ML CAJ C/1 FA(ZUCLEBIN)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7506429600324,
+      "descripcion": "EPIRUBICINA 50MG/25ML CAJ C/1 FA(PAPLUF)",
+      "COSTO DEMSA": 782.84,
+      "PMP DEMSA": 2638.05
+    },
+    {
+      "codigo": 7501559606444,
+      "descripcion": "ERITROPOYETINA THETA 20000UI/1ML CAJ C/1 FA(EPORATIO)",
+      "COSTO DEMSA": 3800.0,
+      "PMP DEMSA": 4854
+    },
+    {
+      "codigo": 7500326353406,
+      "descripcion": "MESILATO DE ERIBULINA 1MG/2ML CAJ C/1 FA(HALAVEN)",
+      "COSTO DEMSA": 9117.0,
+      "PMP DEMSA": 9467.11
+    },
+    {
+      "codigo": 7613326005692,
+      "descripcion": "ERITROPOYETINA BETA 50MCG/0.3ML CAJ C/1 FA(MIRCERA)",
+      "COSTO DEMSA": 3613.0,
+      "PMP DEMSA": 3670
+    },
+    {
+      "codigo": 7613326005708,
+      "descripcion": "ERITROPOYETINA BETA 75MCG/0.3ML CAJ C/1 FA(MIRCERA)",
+      "COSTO DEMSA": 5198.0,
+      "PMP DEMSA": 5280
+    },
+    {
+      "codigo": 7613326005715,
+      "descripcion": "ERITROPOYETINA BETA 100MCG/0.3ML CAJ C/1 FA(MIRCERA)",
+      "COSTO DEMSA": 6783.0,
+      "PMP DEMSA": 6890
+    },
+    {
+      "codigo": 7613326005722,
+      "descripcion": "ERITROPOYETINA BETA 150MCG/0.3ML CAJ C/1 JER(MIRCERA)",
+      "COSTO DEMSA": 9760.0,
+      "PMP DEMSA": 9915
+    },
+    {
+      "codigo": 7613326005739,
+      "descripcion": "ERITROPOYETINA BETA 200MCG/0.3ML CAJ C/1 FA(MIRCERA)",
+      "COSTO DEMSA": 12306.0,
+      "PMP DEMSA": 12501
+    },
+    {
+      "codigo": 7613326005746,
+      "descripcion": "ERITROPOYETINA BETA 250MCG/0.3ML CAJ C/1 FA(MIRCERA)",
+      "COSTO DEMSA": 12541.0,
+      "PMP DEMSA": 12740
+    },
+    {
+      "codigo": 7502213140199,
+      "descripcion": "ERITROPOYETINA HUMANA RECOMBINANTE 4000UI/1ML CAJ C/6 FA(BIOYETIN)",
+      "COSTO DEMSA": 1840.46,
+      "PMP DEMSA": 4886
+    },
+    {
+      "codigo": 7613326005920,
+      "descripcion": "ERLOTINIB 150MG CAJ C/30 COM(TARCEVA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7503003746119,
+      "descripcion": "ESCITALOPRAM 10MG CAJ C/14 TAB(LEXAPRO)",
+      "COSTO DEMSA": 828.0,
+      "PMP DEMSA": 1222
+    },
+    {
+      "codigo": 1000000000052,
+      "descripcion": "ESMOLOL 2.5G/10ML CAJ C/2 FA(CREVIMOL)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501098611329,
+      "descripcion": "ESOMEPRAZOL 40MG CAJ C/14 TAB(NEXIUM-MUPS)",
+      "COSTO DEMSA": 825.0,
+      "PMP DEMSA": 1322
+    },
+    {
+      "codigo": 5000456013666,
+      "descripcion": "ESOMEPRAZOL 40MG/10ML CAJ C/1 FA(NEXIUM IV)",
+      "COSTO DEMSA": 414.0,
+      "PMP DEMSA": 496
+    },
+    {
+      "codigo": 7506335700774,
+      "descripcion": "ETOPOSIDO 100MG/5ML CAJ C/10 FA(CAVEP)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501326000864,
+      "descripcion": "ETORICOXIB 90MG CAJ C/28 COM(ARCOXIA)",
+      "COSTO DEMSA": 1868.0,
+      "PMP DEMSA": 2629.8
+    },
+    {
+      "codigo": 7501124815806,
+      "descripcion": "EVEROLIMUS 5MG CAJ C/30 TAB(AFINITOR)",
+      "COSTO DEMSA": 39309.0,
+      "PMP DEMSA": 41928.28
+    },
+    {
+      "codigo": 7501124815813,
+      "descripcion": "EVEROLIMUS 10MG CAJ C/30 TAB(AFINITOR)",
+      "COSTO DEMSA": 78618.0,
+      "PMP DEMSA": 83856.57
+    },
+    {
+      "codigo": 7501287613059,
+      "descripcion": "EXEMESTANO 25MG CAJ C/30 GRA(AROMASIN)",
+      "COSTO DEMSA": 3266.92,
+      "PMP DEMSA": 5074.61
+    },
+    {
+      "codigo": 7502223555440,
+      "descripcion": "EXEMESTANO 25MG CAJ C/30 TAB(NODUTAX)",
+      "COSTO DEMSA": 2830.0,
+      "PMP DEMSA": 5439
+    },
+    {
+      "codigo": 7501314704620,
+      "descripcion": "FAMOTIDINA 20MG CAJ C/20 TAB(DURATER)",
+      "COSTO DEMSA": 333.0,
+      "PMP DEMSA": 440
+    },
+    {
+      "codigo": 7501125113666,
+      "descripcion": "FENTANILO 0.5MG/10ML CAJ C/6 FA(FENODID)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501165001725,
+      "descripcion": "FEXOFENADINA 180MG CAJ C/10 TAB(ALLEGRA)",
+      "COSTO DEMSA": 442.0,
+      "PMP DEMSA": 592.35
+    },
+    {
+      "codigo": 7501165001718,
+      "descripcion": "FEXOFENADINA 120MG CAJ C/10 TAB(ALLEGRA)",
+      "COSTO DEMSA": 369.0,
+      "PMP DEMSA": 494.6
+    },
+    {
+      "codigo": 7501559613718,
+      "descripcion": "FILGRASTIM 300MCG/1ML CAJ C/1 FA(INMUNEF)",
+      "COSTO DEMSA": 321.0,
+      "PMP DEMSA": 1499
+    },
+    {
+      "codigo": 7502213145408,
+      "descripcion": "FILGRASTIM 300MCG/1ML CAJ C/1 JPRELL(FILATIL)",
+      "COSTO DEMSA": 805.67,
+      "PMP DEMSA": 2254
+    },
+    {
+      "codigo": 7502216933774,
+      "descripcion": "FILGRASTIM 300MCG/1ML CAJ C/5 FA(ZARZIO)",
+      "COSTO DEMSA": 8500.0,
+      "PMP DEMSA": 17236.78
+    },
+    {
+      "codigo": 8906028265228,
+      "descripcion": "FLUDARABINE 50MG/2ML CAJ C/1 FA(FLUDACEL)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502251890636,
+      "descripcion": "FLUOROURACILO 250MG/10ML CAJ C/10 FA(FUOAVIL)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502241941812,
+      "descripcion": "FOSAPREPITANT 150MG/5ML CAJ C/1 FA(EMEND IV)",
+      "COSTO DEMSA": 3359.44,
+      "PMP DEMSA": 3359.44
+    },
+    {
+      "codigo": 7501098609210,
+      "descripcion": "FULVESTRANT 250MG/5ML CAJ C/2 FA(FASLODEX)",
+      "COSTO DEMSA": 23347.0,
+      "PMP DEMSA": 26856
+    },
+    {
+      "codigo": 7501165000186,
+      "descripcion": "FUROSEMIDA 20MG/2ML CAJ C/5 FA(LASIX)",
+      "COSTO DEMSA": 383.0,
+      "PMP DEMSA": 555
+    },
+    {
+      "codigo": 7501165000193,
+      "descripcion": "FUROSEMIDA 40MG CAJ C/24 TAB(LASIX)",
+      "COSTO DEMSA": 274.0,
+      "PMP DEMSA": 409
+    },
+    {
+      "codigo": 7501298224169,
+      "descripcion": "GABAPENTINA/TIAMINA/CIANOCOBALAMINA 300/100/0.2MG CAJ C/30 TAB(GAVINDO N)",
+      "COSTO DEMSA": 831.0,
+      "PMP DEMSA": 1584.87
+    },
+    {
+      "codigo": 7501082214031,
+      "descripcion": "GEMCITABINA 1G/25ML CAJ C/1 FA(GEMZAR)",
+      "COSTO DEMSA": 5885.0,
+      "PMP DEMSA": 7498
+    },
+    {
+      "codigo": 7501082214048,
+      "descripcion": "GEMCITABINA 200MG/5ML CAJ C/1 FA(GEMZAR)",
+      "COSTO DEMSA": 1209.0,
+      "PMP DEMSA": 1541
+    },
+    {
+      "codigo": 7506335701429,
+      "descripcion": "GEMCITABINA 1G/25ML CAJ C/1(ACCOGEM)",
+      "COSTO DEMSA": 1124.0,
+      "PMP DEMSA": 5250
+    },
+    {
+      "codigo": 7506335701412,
+      "descripcion": "GEMCITABINA 200MG/5ML CAJ C/1(ACCOGEM)",
+      "COSTO DEMSA": 449.0,
+      "PMP DEMSA": 2100
+    },
+    {
+      "codigo": 7501125111358,
+      "descripcion": "GLUCONATO DE CALCIO 1G/10ML CAJ C/1 FA(SOLUCION GC)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501324402950,
+      "descripcion": "GOSERELINA 10.8MG/1IMPLANTE CAJ C/1(ZOLADEX)",
+      "COSTO DEMSA": 13754.0,
+      "PMP DEMSA": 18055
+    },
+    {
+      "codigo": 7501324402998,
+      "descripcion": "GOSERELINA 3.6MG/1IMPLANTE CAJ C/1 JER(ZOLADEX)",
+      "COSTO DEMSA": 4795.0,
+      "PMP DEMSA": 6294
+    },
+    {
+      "codigo": 75010527106790,
+      "descripcion": "GRANISETRON  1MG/3ML(MANOTROX)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501125115585,
+      "descripcion": "HEPARINA 10000UI/10ML CAJ C/1 FA(INHEPAR)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": 0
+    },
+    {
+      "codigo": 3499320001359,
+      "descripcion": "HIDROCORTISONA 1.2G/120ML(NUTRACORT)",
+      "COSTO DEMSA": 616.0,
+      "PMP DEMSA": 890.37
+    },
+    {
+      "codigo": 7501125166662,
+      "descripcion": "HIDROCORTISONA 100MG/1ML(HIDROCORTISONA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 3499320001342,
+      "descripcion": "HIDROCORTISONA 0.6G/60G(NUTRACORT)",
+      "COSTO DEMSA": 396.0,
+      "PMP DEMSA": 570.31
+    },
+    {
+      "codigo": 7501233295339,
+      "descripcion": "HIDROXICARBAMIDA 500MG CAJ C/100 CAP(HYDREA)",
+      "COSTO DEMSA": 1858.0,
+      "PMP DEMSA": 2727
+    },
+    {
+      "codigo": 7501328979564,
+      "descripcion": "HIDROXICLOROQUINA 200MG CAJ C/20 TAB(PLAQUENIL)",
+      "COSTO DEMSA": 989.0,
+      "PMP DEMSA": 1399
+    },
+    {
+      "codigo": 7501072310392,
+      "descripcion": "HIDROXIDO DE ALUMINIO/HIDROXIDODE MAGNESIO/DIMETICONA  3.7/4/0.5G/360ML(MELOX PLUS)",
+      "COSTO DEMSA": 125.0,
+      "PMP DEMSA": 202.75
+    },
+    {
+      "codigo": 7501088507601,
+      "descripcion": "HIDROXIZINA 25MG CAJ C/25 TAB(ATARAX)",
+      "COSTO DEMSA": 564.0,
+      "PMP DEMSA": 824
+    },
+    {
+      "codigo": 7640114722776,
+      "descripcion": "CARBOXIMOLTOSA FÉRRICA 500MG/10ML(RENEGY)",
+      "COSTO DEMSA": 3884.0,
+      "PMP DEMSA": 5500.25
+    },
+    {
+      "codigo": 7501385494475,
+      "descripcion": "HIERRO DEXTRAN  100MG/1ML(HI-DEX)",
+      "COSTO DEMSA": 383.0,
+      "PMP DEMSA": 547
+    },
+    {
+      "codigo": 7501092743033,
+      "descripcion": "HIERRO/ACIDO FÓLICO 100/800MG CAJ C/30 TAB(FERRANINA FOL)",
+      "COSTO DEMSA": 518.0,
+      "PMP DEMSA": 737.6
+    },
+    {
+      "codigo": 7501108767947,
+      "descripcion": "IBUPROFENO  400MG CAJ C/20 TAB(ADVIL MAX)",
+      "COSTO DEMSA": 149.0,
+      "PMP DEMSA": 215.15
+    },
+    {
+      "codigo": 7501318608900,
+      "descripcion": "IBUPROFENO  400MG CAJ C/10 TAB(ACTRON)",
+      "COSTO DEMSA": 104.0,
+      "PMP DEMSA": 145
+    },
+    {
+      "codigo": 7501108767527,
+      "descripcion": "IBUPROFENO  400MG CAJ C/10 TAB(ADVIL MAX)",
+      "COSTO DEMSA": 87.0,
+      "PMP DEMSA": 126.05
+    },
+    {
+      "codigo": 7501287627469,
+      "descripcion": "IBUPROFENO  400MG CAJ C/10 TAB(MOTRIN)",
+      "COSTO DEMSA": 88.0,
+      "PMP DEMSA": 125.82
+    },
+    {
+      "codigo": 7502251890742,
+      "descripcion": "IFOSFAMIDA 1000MG/20ML(IDAXFEN)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 307033427119,
+      "descripcion": "IFOSFAMIDA 1000MG/20ML CAJ C/1 FA(IFOSFAMIDE INJECTION)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501092723189,
+      "descripcion": "IXAZOMIB 4MG CAJ C/3 CAP(NINLARO)",
+      "COSTO DEMSA": 124723.0,
+      "PMP DEMSA": 126700
+    },
+    {
+      "codigo": 7501124820909,
+      "descripcion": "IMATINIB 400MG CAJ C/30 TAB(GLIVEC)",
+      "COSTO DEMSA": 36162.0,
+      "PMP DEMSA": 47485.16
+    },
+    {
+      "codigo": 7502253072979,
+      "descripcion": "AZATIOPRINA 50MG CAJ C/25 TAB(IMURAN)",
+      "COSTO DEMSA": 1252.0,
+      "PMP DEMSA": 1799.09
+    },
+    {
+      "codigo": 7501088589607,
+      "descripcion": "INMUNOGLOBULINA HUMANA 5G/50ML CAJ C/! FA(HIGLOBIN)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7506404300027,
+      "descripcion": "INMUNOGLOBULINA HUMANA 10G/100ML CAJ C/1 FA(HIGLOBIN)",
+      "COSTO DEMSA": 18725.0,
+      "PMP DEMSA": 20300
+    },
+    {
+      "codigo": 7506317400104,
+      "descripcion": "INMUNOGLOBULINA HUMANA NORMAL  5G/50ML(TEGELINE)",
+      "COSTO DEMSA": 18725.0,
+      "PMP DEMSA": 20844
+    },
+    {
+      "codigo": 7503003933649,
+      "descripcion": "INMUNOGLOBULINA HUMANA NORMAL  10G/100ML(TEGELINE)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7503007822666,
+      "descripcion": "INSULINA DEGLUDEC 100UI/3ML CAJ C/1(TRESIBA)",
+      "COSTO DEMSA": 873.0,
+      "PMP DEMSA": 1296.05
+    },
+    {
+      "codigo": 7503007822635,
+      "descripcion": "INSULINA DEGLUDEC  100UI/3ML CAJ C/5(TRESIBA)",
+      "COSTO DEMSA": 3578.0,
+      "PMP DEMSA": 5202.58
+    },
+    {
+      "codigo": 3000032327349,
+      "descripcion": "IPILIMUMAB 50MG/10ML(YERVOY)",
+      "COSTO DEMSA": 72767.0,
+      "PMP DEMSA": 77990
+    },
+    {
+      "codigo": 7501037910063,
+      "descripcion": "IPRATROPIO 0.5/2.5MG/2.5ML(COMBIVENT UDVS)",
+      "COSTO DEMSA": 630.0,
+      "PMP DEMSA": 828.46
+    },
+    {
+      "codigo": 8901038410583,
+      "descripcion": "IRINOTECAN 100MG/5ML(DARITEX)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7506335701436,
+      "descripcion": "IRINOTECAN 100MG/5ML(IRAPLAX)",
+      "COSTO DEMSA": 1605.0,
+      "PMP DEMSA": 7500
+    },
+    {
+      "codigo": 7506429600652,
+      "descripcion": "IRINOTECAN 100MG/5ML CAJ C/1 FA(FERADECH)",
+      "COSTO DEMSA": 490.5,
+      "PMP DEMSA": 5966
+    },
+    {
+      "codigo": 7501092722373,
+      "descripcion": "ITOPRIDA 50MG 50MG CAJ C/30 TAB(DAGLA)",
+      "COSTO DEMSA": 476.0,
+      "PMP DEMSA": 680
+    },
+    {
+      "codigo": 7501299302286,
+      "descripcion": "KETOROLACO 30MG/1ML CAJ C/3 FA(SUPRADOL)",
+      "COSTO DEMSA": 64.0,
+      "PMP DEMSA": 243
+    },
+    {
+      "codigo": 7501299306130,
+      "descripcion": "KETOROLACO 30MG CAJ C/4 TAB(SUPRADOL SUBLINGUAL)",
+      "COSTO DEMSA": 96.81,
+      "PMP DEMSA": 160
+    },
+    {
+      "codigo": 7501299306352,
+      "descripcion": "KETOROLACO 10MG CAJ C/10 TAB(SUPRADOL)",
+      "COSTO DEMSA": 109.0,
+      "PMP DEMSA": 158
+    },
+    {
+      "codigo": 7501300407030,
+      "descripcion": "KETOROLACO 30MG/2ML(DOLAC)",
+      "COSTO DEMSA": 290.0,
+      "PMP DEMSA": 434
+    },
+    {
+      "codigo": 7501300407023,
+      "descripcion": "KETOROLACO 30MG CAJ C/4 TAB(DOLAC)",
+      "COSTO DEMSA": 128.0,
+      "PMP DEMSA": 191
+    },
+    {
+      "codigo": 7501299302354,
+      "descripcion": "KETOROLACO 60MG/2ML(SUPRADOL)",
+      "COSTO DEMSA": 188.25,
+      "PMP DEMSA": 363
+    },
+    {
+      "codigo": 7501314704958,
+      "descripcion": "LACTULOSA 83.3G/125ML(LACTULAX)",
+      "COSTO DEMSA": 280.0,
+      "PMP DEMSA": 350
+    },
+    {
+      "codigo": 7501314704972,
+      "descripcion": "LACTULOSA 33.3G/500ML(LACTULAX)",
+      "COSTO DEMSA": 519.0,
+      "PMP DEMSA": 740
+    },
+    {
+      "codigo": 7640133684482,
+      "descripcion": "LENALIDOMIDA 10MG CAJ C/21 CAP(REVLIMID)",
+      "COSTO DEMSA": 110843.0,
+      "PMP DEMSA": 112600
+    },
+    {
+      "codigo": 7640133684475,
+      "descripcion": "LENALIDOMIDA 5MG CAJ C/21 CAP(REVLIMID)",
+      "COSTO DEMSA": 110843.0,
+      "PMP DEMSA": 112600
+    },
+    {
+      "codigo": 7640133684505,
+      "descripcion": "LENALIDOMIDE 25MG CAJ C/21 CAP(REVLIMID)",
+      "COSTO DEMSA": 110843.0,
+      "PMP DEMSA": 112600
+    },
+    {
+      "codigo": 7501094916817,
+      "descripcion": "LETROZOL 2.5MG CAJ C/30 TAB(FEMARA)",
+      "COSTO DEMSA": 3128.0,
+      "PMP DEMSA": 3623.05
+    },
+    {
+      "codigo": 7502223555044,
+      "descripcion": "LETROZOL 2.5MG CAJ C/30 TAB(TRODIS)",
+      "COSTO DEMSA": 2218.0,
+      "PMP DEMSA": 3990
+    },
+    {
+      "codigo": 7502254000544,
+      "descripcion": "LETROZOL 2.5MG CAJ C/30 TAB(ZOLSTRO)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501871730452,
+      "descripcion": "LEUPROLIDE 7.5MG/0.3ML(ELIGARD)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501871730469,
+      "descripcion": "LEUPROLIDE 22.5MG/0.5ML CAJ C/1 FA(ELIGARD)",
+      "COSTO DEMSA": 15547.0,
+      "PMP DEMSA": 18162.36
+    },
+    {
+      "codigo": 7730979095440,
+      "descripcion": "LEUPROLIDE 45MG/2ML(ELIGARD)",
+      "COSTO DEMSA": 28726.0,
+      "PMP DEMSA": 33558.95
+    },
+    {
+      "codigo": 8054083009834,
+      "descripcion": "LEUPROLIDE 3.75MG/1.5ML CAJ C/1 FA(LUCRIN DEPOT)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 8054083019246,
+      "descripcion": "LEUPROLIDE 11.25MG/2ML CAJ C/1 FA(LUCRIN DEPOT)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501298234908,
+      "descripcion": "LEVOTIROXINA  50MG CAJ C/50 TAB(EUTIROX)",
+      "COSTO DEMSA": 275.0,
+      "PMP DEMSA": 400.66
+    },
+    {
+      "codigo": 7501122967019,
+      "descripcion": "LIDAMIDINA  4MG CAJ C/30 TAB(SUPRA)",
+      "COSTO DEMSA": 438.0,
+      "PMP DEMSA": 685.41
+    },
+    {
+      "codigo": 1000000000069,
+      "descripcion": "LIDOCAINA 2G/100ML(PISACAINA SIMPLE 2%)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501125112782,
+      "descripcion": "LIDOCAINA 1G/100ML(PISACAINA SIMPLE 1%)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501125112935,
+      "descripcion": "LIDOCAINA/EPINEFRINA 2/0.05MG/50ML(PISACAINA CON LIDOCAINA 2%)",
+      "COSTO DEMSA": 84.0,
+      "PMP DEMSA": 107.6
+    },
+    {
+      "codigo": 7502253073617,
+      "descripcion": "LIDOCAINA/PRILOCAINA 1G CAJ C/2 PAR(EMLA)",
+      "COSTO DEMSA": 181.0,
+      "PMP DEMSA": 236.05
+    },
+    {
+      "codigo": 7502253073624,
+      "descripcion": "LIDOCAINA/PRILOCAINA 30G CAJ C/1 TUB(EMLA)",
+      "COSTO DEMSA": 478.0,
+      "PMP DEMSA": 713.74
+    },
+    {
+      "codigo": 7501559606413,
+      "descripcion": "LIPEGFILGRASTIM 6MG/0.6ML(LINKIX)",
+      "COSTO DEMSA": 23177.0,
+      "PMP DEMSA": 30694
+    },
+    {
+      "codigo": 7501057002663,
+      "descripcion": "LOPERAMIDA 2MG CAJ C/8 TAB(LOMOTIL)",
+      "COSTO DEMSA": 143.0,
+      "PMP DEMSA": 206.9
+    },
+    {
+      "codigo": 7501299300367,
+      "descripcion": "LORATADINA 10MG CAJ C/10 TAB(SENSIBIT)",
+      "COSTO DEMSA": 173.0,
+      "PMP DEMSA": 243
+    },
+    {
+      "codigo": 7501314703753,
+      "descripcion": "LORATADINA 10MG CAJ C/10 TAB(DIMEGAN)",
+      "COSTO DEMSA": 284.0,
+      "PMP DEMSA": 370
+    },
+    {
+      "codigo": 7501050633659,
+      "descripcion": "LORATADINA 10MG CAJ C/10 TAB(CLARITYNE)",
+      "COSTO DEMSA": 159.0,
+      "PMP DEMSA": 223.08
+    },
+    {
+      "codigo": 7501287670991,
+      "descripcion": "PREGABALINA 50MG CAJ C/28 TAB(LYRICA)",
+      "COSTO DEMSA": 839.0,
+      "PMP DEMSA": 1279.94
+    },
+    {
+      "codigo": 7501871720774,
+      "descripcion": "MACROGOL 17G CAJ C/15 SOB(CONTUMAX)",
+      "COSTO DEMSA": 426.0,
+      "PMP DEMSA": 577.18
+    },
+    {
+      "codigo": 7501287678034,
+      "descripcion": "MECLOZINA/PIRIDOXINA 25/50MG CAJ C/25 TAB(BONADOXINA)",
+      "COSTO DEMSA": 281.0,
+      "PMP DEMSA": 412.41
+    },
+    {
+      "codigo": 7502253073167,
+      "descripcion": "MELFALAN 2MG CAJ C/25 TAB(ALKERAN)",
+      "COSTO DEMSA": 1996.0,
+      "PMP DEMSA": 2777.63
+    },
+    {
+      "codigo": 7502253073013,
+      "descripcion": "MERCAPTOPURINA 50MG CAJ C/25 TAB(PURINETHOL)",
+      "COSTO DEMSA": 2046.0,
+      "PMP DEMSA": 2847.95
+    },
+    {
+      "codigo": 7501070614997,
+      "descripcion": "MESNA 400MG/4ML CAJ C/5 FA(UROMES)",
+      "COSTO DEMSA": 358.0,
+      "PMP DEMSA": 749
+    },
+    {
+      "codigo": 7501125124631,
+      "descripcion": "MESNA 400MG/4ML CAJ C/5 AMP(NOVACAREL)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 5415062378861,
+      "descripcion": "METILPREDNISOLONA 40MG/ML CAJ C/1 FA(DEPO MEDROL)",
+      "COSTO DEMSA": 199.0,
+      "PMP DEMSA": 292.64
+    },
+    {
+      "codigo": 7501124100704,
+      "descripcion": "METOCLOPRAMIDA 10MG CAJ C/20 TAB(CARNOTPRIM)",
+      "COSTO DEMSA": 319.0,
+      "PMP DEMSA": 377.17
+    },
+    {
+      "codigo": 7501563310269,
+      "descripcion": "METOCLOPRAMIDA  10MG/2ML(METOCLOPRAMIDA)",
+      "COSTO DEMSA": 6.0,
+      "PMP DEMSA": 53
+    },
+    {
+      "codigo": 7501124100759,
+      "descripcion": "METOCLOPRAMIDA 10MG/2ML CAJ C/6 AMP(CARNOTPRIM)",
+      "COSTO DEMSA": 468.0,
+      "PMP DEMSA": 538.05
+    },
+    {
+      "codigo": 7501250838427,
+      "descripcion": "METOCLOPRAMIDA/ONDASETRON 10MG/4MG CAJ C/10 TAB(CLODASET)",
+      "COSTO DEMSA": 690.0,
+      "PMP DEMSA": 981.03
+    },
+    {
+      "codigo": 7506335703416,
+      "descripcion": "METOTREXATO 2.5MG CAJ C/50 TAB(AC VONDA)",
+      "COSTO DEMSA": 214.0,
+      "PMP DEMSA": 1000
+    },
+    {
+      "codigo": 7506429600232,
+      "descripcion": "METOTREXATO 50MG/2ML CAJ C/1 FA(ULMEXTRAL)",
+      "COSTO DEMSA": 144.97,
+      "PMP DEMSA": 448
+    },
+    {
+      "codigo": 7506429600249,
+      "descripcion": "METOTREXATO 500MG/20ML CAJ C/1 FA(ULMEXTRAL)",
+      "COSTO DEMSA": 313.92,
+      "PMP DEMSA": 780
+    },
+    {
+      "codigo": 7501052710655,
+      "descripcion": "METOTREXATO 500MG/20ML(FRESEXATE)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7506335700163,
+      "descripcion": "METOTREXATO 500MG/20ML(TRAXACORD)",
+      "COSTO DEMSA": 375.0,
+      "PMP DEMSA": 1750
+    },
+    {
+      "codigo": 7501052710648,
+      "descripcion": "METOTREXATO 50MG/2ML(FRESEXATE)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501125162794,
+      "descripcion": "MIDAZOLAM  5MG/5ML(RELACUM)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501871720941,
+      "descripcion": "MIRTAZAPINA 30MG CAJ C/30 TAB(COMENTER)",
+      "COSTO DEMSA": 1898.0,
+      "PMP DEMSA": 2561.54
+    },
+    {
+      "codigo": 7730979095464,
+      "descripcion": "MIRTAZAPINA 15MG CAJ C/10 TAB(COMENTER)",
+      "COSTO DEMSA": 616.0,
+      "PMP DEMSA": 841.74
+    },
+    {
+      "codigo": 8906001840701,
+      "descripcion": "MITOMICINA 10MG/20ML CAJ C/1 FA(MITOMYCIN)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 367457519203,
+      "descripcion": "MITOMICINA 20MG/20ML CAJ C/1 FA(MITOMYCIN)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502251890704,
+      "descripcion": "MITOXANTRONA 20MG/10ML CAJ C/1 FA(MITOXANTRONA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501314703548,
+      "descripcion": "MONTELUKAST 10MG CAJ C/30 TAB(SENOVITAL)",
+      "COSTO DEMSA": 1005.0,
+      "PMP DEMSA": 1120
+    },
+    {
+      "codigo": 7501299330173,
+      "descripcion": "MONTELUKAST  10MG CAJ C/30 TAB(EVEREST C)",
+      "COSTO DEMSA": 899.0,
+      "PMP DEMSA": 1091
+    },
+    {
+      "codigo": 7501125113109,
+      "descripcion": "MORFINA 10MG/10ML CAJA C/5 AMP(GRATEN)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501122962106,
+      "descripcion": "MULTIVITAMINAS 10MG/10ML CAJ C/2 FA(DEXTREVIT)",
+      "COSTO DEMSA": 295.0,
+      "PMP DEMSA": 413.26
+    },
+    {
+      "codigo": 7501058714220,
+      "descripcion": "NISTATINA  100000UI/30ML(MICOSTATIN)",
+      "COSTO DEMSA": 405.0,
+      "PMP DEMSA": 683.82
+    },
+    {
+      "codigo": 7501908253367,
+      "descripcion": "NITROPRUSIATO DE SODIO 50MG/2ML CAJ C/1 FA(CORDIBUX)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501125124570,
+      "descripcion": "NOREPINEFRINA 4MG/4ML(PRIDAM)",
+      "COSTO DEMSA": 1128.0,
+      "PMP DEMSA": 1591.48
+    },
+    {
+      "codigo": 7613326005579,
+      "descripcion": "OBINUTUZUMAB 1000MG/40ML CAJ C/1 FA(GAZYVA)",
+      "COSTO DEMSA": 112573.0,
+      "PMP DEMSA": 114357
+    },
+    {
+      "codigo": 7613326017749,
+      "descripcion": "OCRELIZUMAB 300MG/10ML CAJ C/1 FA(OCREVUS)",
+      "COSTO DEMSA": 207222.0,
+      "PMP DEMSA": 210506
+    },
+    {
+      "codigo": 7502253890184,
+      "descripcion": "INMUNOGLOBULINA HUMANA 10G/100ML(OCTAGAM)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502253890160,
+      "descripcion": "INMUNOGLOBULINA HUMANA 5G/50ML(OCTAGAM)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501124819279,
+      "descripcion": "OCTREOTIDA  20MG/2.5ML(SANDOSTATINA LAR)",
+      "COSTO DEMSA": 23925.0,
+      "PMP DEMSA": 33506.33
+    },
+    {
+      "codigo": 7501124819286,
+      "descripcion": "OCTREOTIDA 30MG/2.5ML CAJ C/1 FA(SANDOSTATINA LAR)",
+      "COSTO DEMSA": 30047.0,
+      "PMP DEMSA": 42644.42
+    },
+    {
+      "codigo": 7501082212075,
+      "descripcion": "OLANZAPINA  10MG CAJ C/14 TAB(ZYPREXA)",
+      "COSTO DEMSA": 2348.0,
+      "PMP DEMSA": 2976
+    },
+    {
+      "codigo": 7501082212037,
+      "descripcion": "OLANZAPINA  5MG CAJ C/14 TAB(ZYPREXA)",
+      "COSTO DEMSA": 1371.0,
+      "PMP DEMSA": 1738
+    },
+    {
+      "codigo": 7501082242072,
+      "descripcion": "OLANZAPINA 5MG CAJ C/14 TAB(ZYPREXA ZYDIS)",
+      "COSTO DEMSA": 1427.0,
+      "PMP DEMSA": 1624
+    },
+    {
+      "codigo": 5000456033169,
+      "descripcion": "OLAPARIB 150MG CAJ C/56 TAB(LYNPARZA)",
+      "COSTO DEMSA": 64270.0,
+      "PMP DEMSA": 69393
+    },
+    {
+      "codigo": 5000456053426,
+      "descripcion": "OLAPARIB  50MG MG CAJ C/4 TAB(LYNPARZA)",
+      "COSTO DEMSA": 125891.0,
+      "PMP DEMSA": 132101
+    },
+    {
+      "codigo": 7503007704566,
+      "descripcion": "OMEGA 3 1000MG CAJ C/28 TAB(OMACOR)",
+      "COSTO DEMSA": 515.0,
+      "PMP DEMSA": 836
+    },
+    {
+      "codigo": 650240031427,
+      "descripcion": "OMEPRAZOL 20MG CAJ C/14 CAP(GENOPRAZOL)",
+      "COSTO DEMSA": 60.0,
+      "PMP DEMSA": 96.23
+    },
+    {
+      "codigo": 650240036354,
+      "descripcion": "OMEPRAZOL 20MG CAJ C/7 CAP(GENOPRAZOL)",
+      "COSTO DEMSA": 45.0,
+      "PMP DEMSA": 75.54
+    },
+    {
+      "codigo": 7501299306833,
+      "descripcion": "OMEPRAZOL 40MG/10ML CAJ C/1 FA(INHIBITRON)",
+      "COSTO DEMSA": 109.0,
+      "PMP DEMSA": 322
+    },
+    {
+      "codigo": 7501299307175,
+      "descripcion": "OMEPRAZOL 40MG CAJ C/7 TAB(INHIBITRON F)",
+      "COSTO DEMSA": 320.0,
+      "PMP DEMSA": 461
+    },
+    {
+      "codigo": 7501314704828,
+      "descripcion": "OMEPRAZOL 40MG CAJ C/14 TAB(ULSEN PCS)",
+      "COSTO DEMSA": 488.0,
+      "PMP DEMSA": 600
+    },
+    {
+      "codigo": 7501314704866,
+      "descripcion": "OMEPRAZOL 40MG/10ML CAJ C/1 FA(ULSEN)",
+      "COSTO DEMSA": 322.0,
+      "PMP DEMSA": 420
+    },
+    {
+      "codigo": 7501314704880,
+      "descripcion": "OMEPRAZOL 20MG CAJ C/14 TAB(ULSEN)",
+      "COSTO DEMSA": 445.0,
+      "PMP DEMSA": 580
+    },
+    {
+      "codigo": 7501314704897,
+      "descripcion": "OMEPRAZOL 20MG CAJ C/21 TAB(ULSEN)",
+      "COSTO DEMSA": 380.0,
+      "PMP DEMSA": 480
+    },
+    {
+      "codigo": 7501299330012,
+      "descripcion": "OMEPRAZOL 40MG CAJ C/15 TAB(INHIBITRON F)",
+      "COSTO DEMSA": 550.0,
+      "PMP DEMSA": 668
+    },
+    {
+      "codigo": 7501043165266,
+      "descripcion": "ONDANSETRON 8MG/4ML CAJ C/3(ZOFRAN)",
+      "COSTO DEMSA": 1230.0,
+      "PMP DEMSA": 1684.93
+    },
+    {
+      "codigo": 7503000645477,
+      "descripcion": "ONDANSETRON 8MG CAJ C/10 TAB(AMAL)",
+      "COSTO DEMSA": 698.05,
+      "PMP DEMSA": 1296
+    },
+    {
+      "codigo": 7503000645491,
+      "descripcion": "ONDANSETRON 8MG/4ML CAJ C/3(AMAL)",
+      "COSTO DEMSA": 615.25,
+      "PMP DEMSA": 1142
+    },
+    {
+      "codigo": 7502227870716,
+      "descripcion": "ONDANSETRON  8MG CAJ C/10 TAB(VYLKOR)",
+      "COSTO DEMSA": 75.0,
+      "PMP DEMSA": 555.26
+    },
+    {
+      "codigo": 5000456055116,
+      "descripcion": "OSIMERTINIB  80MG CAJ C/30 TAB(TAGRISSO)",
+      "COSTO DEMSA": 168245.0,
+      "PMP DEMSA": 181656
+    },
+    {
+      "codigo": 7501165005532,
+      "descripcion": "OXALIPLATINO 50MG/10ML CAJ C/1 FA(ELOXATIN)",
+      "COSTO DEMSA": 11272.0,
+      "PMP DEMSA": 12675
+    },
+    {
+      "codigo": 7501165005549,
+      "descripcion": "OXALIPLATINO 100MG/20ML CAJ C/1 FRA(ELOXATIN)",
+      "COSTO DEMSA": 23160.0,
+      "PMP DEMSA": 26025
+    },
+    {
+      "codigo": 8901038410927,
+      "descripcion": "OXALIPLATINO 100MG/20ML CAJ C/1 FA(OXITAN)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7506335701498,
+      "descripcion": "OXALIPLATINO 100MG/20ML CAJ C/1 FA(RECOPLAT)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7506429600348,
+      "descripcion": "OXALIPLATINO 100MG/20ML CAJ C/1 FA(TIBOQUIR)",
+      "COSTO DEMSA": 792.11,
+      "PMP DEMSA": 14560
+    },
+    {
+      "codigo": 7506335701481,
+      "descripcion": "OXALIPLATINO 50MG/10ML CAJ C/1 FA(RECOPLAT)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 8901038410910,
+      "descripcion": "OXALIPLATINO 50MG/10ML CAJ C/1 FA(OXITAN)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7506429600331,
+      "descripcion": "OXALIPLATINO 50MG/10ML CAJ C/1 FA(TIBOQUIR)",
+      "COSTO DEMSA": 430.55,
+      "PMP DEMSA": 6720
+    },
+    {
+      "codigo": 7501092743064,
+      "descripcion": "OXIDO FERRICO 100MG/5ML(VENOFERRUM)",
+      "COSTO DEMSA": 402.0,
+      "PMP DEMSA": 515.74
+    },
+    {
+      "codigo": 7501052713632,
+      "descripcion": "PACLITAXEL 300MG/50ML CAJ C/1 FA(DABUREX)",
+      "COSTO DEMSA": 1155.0,
+      "PMP DEMSA": 3500
+    },
+    {
+      "codigo": 7501052713908,
+      "descripcion": "PACLITAXEL 30MG/5ML CAJ C/1 FA(DABUREX)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7506429600614,
+      "descripcion": "PACLITAXEL 30MG/5ML CAJ C/1 FA(SIRAPEH)",
+      "COSTO DEMSA": 1098.0,
+      "PMP DEMSA": 6243.44
+    },
+    {
+      "codigo": 7506335701320,
+      "descripcion": "PACLITAXEL 30MG/5ML CAJ C/1 FA(ACOEXCEL)",
+      "COSTO DEMSA": 161.0,
+      "PMP DEMSA": 750
+    },
+    {
+      "codigo": 7506200700175,
+      "descripcion": "PACLITAXEL 300MG/50ML CAJ C/1 FA(ZETATAXO)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501070614843,
+      "descripcion": "PACLITAXEL 300MG/50ML CAJ C/1 FA(PACLISAN)",
+      "COSTO DEMSA": 2044.0,
+      "PMP DEMSA": 8066
+    },
+    {
+      "codigo": 7506429600447,
+      "descripcion": "PACLITAXEL 300MG/50ML CAJ C/1 FA(SIRAPEH)",
+      "COSTO DEMSA": 169.14,
+      "PMP DEMSA": 1418.02
+    },
+    {
+      "codigo": 7502254000780,
+      "descripcion": "PACLITAXEL 300MG/50ML CAJ C/1 FA(ACOEXCEL)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501070614805,
+      "descripcion": "PACLITAXEL 30MG/5ML CAJ C/1 FA(PACLISAN)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501287609618,
+      "descripcion": "PALBOCICLIB 75MG CAJ C/21 TAB(IBRANCE-21)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501287609625,
+      "descripcion": "PALBOCICLIB 100MG CAJ C/21TAB(IBRANCE-21)",
+      "COSTO DEMSA": 80062.0,
+      "PMP DEMSA": 100586.87
+    },
+    {
+      "codigo": 7501287609632,
+      "descripcion": "PALBOCICLIB 125MG CAJ C/21 TAB(IBRANCE-21)",
+      "COSTO DEMSA": 80062.0,
+      "PMP DEMSA": 100586.87
+    },
+    {
+      "codigo": 7501050614863,
+      "descripcion": "PALONOSETRON 0.25MG/5ML CAJ C/1 FA(ONICIT)",
+      "COSTO DEMSA": 5983.0,
+      "PMP DEMSA": 6397.85
+    },
+    {
+      "codigo": 7501050626439,
+      "descripcion": "PALONOSETRON 0.075MG/1.5ML CAJ C/1 FA(ONICIT)",
+      "COSTO DEMSA": 1581.0,
+      "PMP DEMSA": 1922.38
+    },
+    {
+      "codigo": 7501701406588,
+      "descripcion": "PALONOSETRON/NETUPITANT 0.5/300MG CAJ C/1 CAP(AQYNZIO)",
+      "COSTO DEMSA": 3908.0,
+      "PMP DEMSA": 4419.96
+    },
+    {
+      "codigo": 7506335700101,
+      "descripcion": "PALONOSETRON 0.25MG/5ML CAJ C/1 FA(VIQET)",
+      "COSTO DEMSA": 856.0,
+      "PMP DEMSA": 4000
+    },
+    {
+      "codigo": 8715131005603,
+      "descripcion": "PANITUMUMAB 100MG/5ML CAJ C/1 FA(VECTIBIX)",
+      "COSTO DEMSA": 17708.0,
+      "PMP DEMSA": 17988.31
+    },
+    {
+      "codigo": 7501092771975,
+      "descripcion": "PANTOPRAZOL 40MG/10ML(PANTOZOL)",
+      "COSTO DEMSA": 386.0,
+      "PMP DEMSA": 552
+    },
+    {
+      "codigo": 7501871721481,
+      "descripcion": "PANTOPRAZOL 40MG CAJ C/14 COM(ZOLTUM)",
+      "COSTO DEMSA": 573.0,
+      "PMP DEMSA": 823.42
+    },
+    {
+      "codigo": 7501299303474,
+      "descripcion": "PANTOPRAZOL 40MG CAJ C/14 TAB(PRAZOLAN)",
+      "COSTO DEMSA": 496.18,
+      "PMP DEMSA": 820
+    },
+    {
+      "codigo": 7501095452116,
+      "descripcion": "PARACETAMOL 500MG CAJ C/10 TAB(TEMPRA)",
+      "COSTO DEMSA": 43.0,
+      "PMP DEMSA": 62.44
+    },
+    {
+      "codigo": 7501095452147,
+      "descripcion": "PARACETAMOL 500MG CAJ C/20 TAB(TEMPRA)",
+      "COSTO DEMSA": 82.0,
+      "PMP DEMSA": 132.15
+    },
+    {
+      "codigo": 7501100089016,
+      "descripcion": "PARACETAMOL 750MG CAJ C/20 TAB(TYLEX)",
+      "COSTO DEMSA": 267.0,
+      "PMP DEMSA": 351.7
+    },
+    {
+      "codigo": 7501109911035,
+      "descripcion": "PARACETAMOL 750MG CAJ C/40 TAB(TYLEX)",
+      "COSTO DEMSA": 431.0,
+      "PMP DEMSA": 623.2
+    },
+    {
+      "codigo": 7501125175701,
+      "descripcion": "PARACETAMOL 1G/100ML CAJ C/1 FA(SALPIFAR)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501287620507,
+      "descripcion": "PARECOXIB 40MG/2ML(DYNASTAT)",
+      "COSTO DEMSA": 428.0,
+      "PMP DEMSA": 974.33
+    },
+    {
+      "codigo": 8715131010119,
+      "descripcion": "PEGFILGRASTIM 6MG/0.6ML CAJ C/1 FA(NEULASTIM)",
+      "COSTO DEMSA": 33230.0,
+      "PMP DEMSA": 34506.94
+    },
+    {
+      "codigo": 8715131022549,
+      "descripcion": "PEGFILGRASTIM 6MG/0.6ML CAJ C/1 FA(NEULASTIM ON BODY)",
+      "COSTO DEMSA": 33969.0,
+      "PMP DEMSA": 34506.94
+    },
+    {
+      "codigo": 7501050632126,
+      "descripcion": "PEMBROLIZUMAB 100MG/4ML CAJ C/1 FA(KEYTRUDA)",
+      "COSTO DEMSA": 99234.27,
+      "PMP DEMSA": 99234.27
+    },
+    {
+      "codigo": 7501082212341,
+      "descripcion": "PEMETREXED 500MG/20ML CAJ C/1 FA(ALIMTA)",
+      "COSTO DEMSA": 21752.0,
+      "PMP DEMSA": 28206
+    },
+    {
+      "codigo": 7506335700248,
+      "descripcion": "PEMETREXED 500MG/20ML CAJ C/1 FA(EMPET)",
+      "COSTO DEMSA": 2140.0,
+      "PMP DEMSA": 10000
+    },
+    {
+      "codigo": 7506335700255,
+      "descripcion": "PEMETREXED 100MG/20ML CAJA C/1(EMPET)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502216806924,
+      "descripcion": "PEMETREXED 500MG/20ML CAJ C/1 FA(FAMPOR)",
+      "COSTO DEMSA": 1087.33,
+      "PMP DEMSA": 17920
+    },
+    {
+      "codigo": 7502223555488,
+      "descripcion": "PEMETREXED 500MG CAJ C/1 FA(BEMETAD)",
+      "COSTO DEMSA": 14200.0,
+      "PMP DEMSA": 26450
+    },
+    {
+      "codigo": 7500463184581,
+      "descripcion": "PEMETREXED 500MG/20ML CAJ C/1 FA(ITARA)",
+      "COSTO DEMSA": 2006.0,
+      "PMP DEMSA": 9000
+    },
+    {
+      "codigo": 7613326005760,
+      "descripcion": "PERTUZUMAB 420MG/14ML CAJ C/1 FA(PERJETA)",
+      "COSTO DEMSA": 92907.0,
+      "PMP DEMSA": 94379
+    },
+    {
+      "codigo": 7501088508929,
+      "descripcion": "PICOSULFATO DE SODIO 5MG CA C/20 TAB(ANARA)",
+      "COSTO DEMSA": 134.0,
+      "PMP DEMSA": 189.91
+    },
+    {
+      "codigo": 7501088508912,
+      "descripcion": "PICOSULFATO SODICO 7.5MG/ML CAJ C/1 FA(ANARA)",
+      "COSTO DEMSA": 150.0,
+      "PMP DEMSA": 195.52
+    },
+    {
+      "codigo": 7502209290556,
+      "descripcion": "POLIVINILPIRROLIDONA/ACIDO GLICIRRETICO/HIALURONATO DE SODIO 10MG CAJ C/10 SOB(GELCLAIR GEL)",
+      "COSTO DEMSA": 1130.0,
+      "PMP DEMSA": 1523.28
+    },
+    {
+      "codigo": 7640133685540,
+      "descripcion": "POMALIDOMIDA 3MG CAJ C/21 TAB(IMNOVID)",
+      "COSTO DEMSA": 144608.0,
+      "PMP DEMSA": 146900
+    },
+    {
+      "codigo": 7640133685557,
+      "descripcion": "POMALIDOMIDA 4MG CAJ C/21 TAB(IMNOVID)",
+      "COSTO DEMSA": 144608.0,
+      "PMP DEMSA": 146900
+    },
+    {
+      "codigo": 7501089802989,
+      "descripcion": "LISINA 913MG CAJ C/50 TAB(CORPOTASIN LISINA)",
+      "COSTO DEMSA": 531.0,
+      "PMP DEMSA": 765.28
+    },
+    {
+      "codigo": 7501089803030,
+      "descripcion": "GLUCONATO DE POTASIO 4.68G CAJ C/10 SOB(CORPOTASIN GK)",
+      "COSTO DEMSA": 224.0,
+      "PMP DEMSA": 322.38
+    },
+    {
+      "codigo": 7501299303481,
+      "descripcion": "PANTOPRAZOL 40MG/10ML CAJ C/1 FA(PRAZOLAN)",
+      "COSTO DEMSA": 163.62,
+      "PMP DEMSA": 338
+    },
+    {
+      "codigo": 7501349028500,
+      "descripcion": "PREDNISONA 50 MG 20 TAB (AMSA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502209852426,
+      "descripcion": "PREDNISONA 20MG CAJ C/30 TAB(METICORTEN)",
+      "COSTO DEMSA": 632.0,
+      "PMP DEMSA": 871.97
+    },
+    {
+      "codigo": 7502209852440,
+      "descripcion": "PREDNISONA 50MG CAJ C/20 TAB(METICORTEN)",
+      "COSTO DEMSA": 1512.0,
+      "PMP DEMSA": 2115.04
+    },
+    {
+      "codigo": 7502209852457,
+      "descripcion": "PREDNISONA 5MG CAJ C/30 TAB(METICORTEN)",
+      "COSTO DEMSA": 496.0,
+      "PMP DEMSA": 693.91
+    },
+    {
+      "codigo": 7501287670311,
+      "descripcion": "PREGABALINA 75MG CAJ C/28 TAB(LYRICA)",
+      "COSTO DEMSA": 1102.0,
+      "PMP DEMSA": 1727.46
+    },
+    {
+      "codigo": 7501287670328,
+      "descripcion": "PREGABALINA 150MG CAJ C/14 TAB(LYRICA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501287670335,
+      "descripcion": "PREGABALINA 150MG CAJ C/28 TAB(LYRICA)",
+      "COSTO DEMSA": 1108.0,
+      "PMP DEMSA": 1736.85
+    },
+    {
+      "codigo": 7501287671165,
+      "descripcion": "PREGABALINA 2G/100ML CAJ C/1(LYRICA)",
+      "COSTO DEMSA": 1033.0,
+      "PMP DEMSA": 1619.22
+    },
+    {
+      "codigo": 7501125192104,
+      "descripcion": "PROPOFOL 200MG/20ML CAJ C/5 FA(RECOFOL)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7503007704597,
+      "descripcion": "RACECADOTRILO 100MG CAJ C/9 CAP(HIDRASEC)",
+      "COSTO DEMSA": 278.0,
+      "PMP DEMSA": 452.22
+    },
+    {
+      "codigo": 7501082243369,
+      "descripcion": "RAMUCIRUMAB 500MG/50ML CAJ C/1 FA(CYRAMZA)",
+      "COSTO DEMSA": 74894.0,
+      "PMP DEMSA": 95892
+    },
+    {
+      "codigo": 7501318608481,
+      "descripcion": "REGORAFENIB 40MG CAJ C/28 TAB(STIVARGA)",
+      "COSTO DEMSA": 43290.0,
+      "PMP DEMSA": 43976
+    },
+    {
+      "codigo": 7501125162800,
+      "descripcion": "MIDAZOLAM 15MG/3ML CAJ C/5 FA(RELACUM)",
+      "COSTO DEMSA": 1307.0,
+      "PMP DEMSA": 1498.84
+    },
+    {
+      "codigo": 7501109920464,
+      "descripcion": "INFLIXIMAB 100MG/10ML CAJ C/1 FA(REMICADE)",
+      "COSTO DEMSA": 19748.83,
+      "PMP DEMSA": 19748.83
+    },
+    {
+      "codigo": 5034642044714,
+      "descripcion": "ELTROMBOPAG 25MG CAJ C/28 TAB(REVOLADE)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7613326005654,
+      "descripcion": "RITUXIMAB 100MG/10ML CAJ C/2 FA(MABTHERA)",
+      "COSTO DEMSA": 21359.0,
+      "PMP DEMSA": 21697
+    },
+    {
+      "codigo": 7613326005661,
+      "descripcion": "RITUXIMAB 500MG/50ML CAJ C/1(MABTHERA)",
+      "COSTO DEMSA": 53363.0,
+      "PMP DEMSA": 54209
+    },
+    {
+      "codigo": 7501318608788,
+      "descripcion": "RIVAROXABAN 20MG CAJ C/28 TAB(XARELTO)",
+      "COSTO DEMSA": 2509.0,
+      "PMP DEMSA": 3369
+    },
+    {
+      "codigo": 8715131005276,
+      "descripcion": "ROMIPLOSTIM  250MCG/0.5ML CAJ C/1 FA(NPLATE)",
+      "COSTO DEMSA": 17009.0,
+      "PMP DEMSA": 17278.71
+    },
+    {
+      "codigo": 7501125122446,
+      "descripcion": "ROPIVACAINA 7.5MG/1ML CAJ C/4 FA(ROPICONEST)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501098610070,
+      "descripcion": "ROSUVASTATINA 40MG CAJ C/30 TAB(CRESTOR)",
+      "COSTO DEMSA": 1498.0,
+      "PMP DEMSA": 2389
+    },
+    {
+      "codigo": 300090887018,
+      "descripcion": "METILPREDNISOLONA 500MG/8ML CAJ C/1 FA(SOLU MEDROL)",
+      "COSTO DEMSA": 383.0,
+      "PMP DEMSA": 730.83
+    },
+    {
+      "codigo": 7501318690356,
+      "descripcion": "SORAFENIB 200MG CAJ C/112 TAB(NEXAVAR)",
+      "COSTO DEMSA": 74308.0,
+      "PMP DEMSA": 75486
+    },
+    {
+      "codigo": 7501050627658,
+      "descripcion": "SUGAMMADEX 100MG/1ML CAJ C/10 FA(BRIDION)",
+      "COSTO DEMSA": 30126.0,
+      "PMP DEMSA": 30523.2
+    },
+    {
+      "codigo": 7501125111280,
+      "descripcion": "SULFATO DE MAGNESIO 1G/10ML FA (MAGNEFUSIN)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501287618474,
+      "descripcion": "SUNITINIB  12.5MG CAJ C/28 CAP(SUTENT)",
+      "COSTO DEMSA": 17568.9,
+      "PMP DEMSA": 28691.76
+    },
+    {
+      "codigo": 7501287618467,
+      "descripcion": "SUNITINIB 25MG CAJ C/28 TAB(SUTENT)",
+      "COSTO DEMSA": 33965.05,
+      "PMP DEMSA": 57404.75
+    },
+    {
+      "codigo": 7501287618450,
+      "descripcion": "SUNITINIB 50MG CAJ C/28 CAP(SUTENT)",
+      "COSTO DEMSA": 67930.12,
+      "PMP DEMSA": 114809.5
+    },
+    {
+      "codigo": 7501258200868,
+      "descripcion": "TALIDOMIDA  100MG CAJ C/50 TAB(TALIZER)",
+      "COSTO DEMSA": 2067.0,
+      "PMP DEMSA": 2086.51
+    },
+    {
+      "codigo": 7501871720217,
+      "descripcion": "TAMOXIFENO 20MG CAJ C/30 TAB(TAXUS)",
+      "COSTO DEMSA": 394.0,
+      "PMP DEMSA": 450.64
+    },
+    {
+      "codigo": 7501098608541,
+      "descripcion": "TAMOXIFENO 20MG CAJ C/20 TAB(NOLVADEX)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502209290808,
+      "descripcion": "TAPENTADOL 50MG CAJ C/30 TAB(PALEXIA RETARD)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502209290815,
+      "descripcion": "TAPENTADOL 100MG CAJ C/30 TAB(PALEXIA RETARD)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501050617727,
+      "descripcion": "TEMOZOLOMIDA  100MG CAJ C/5 TAB(TEMODAL)",
+      "COSTO DEMSA": 15057.0,
+      "PMP DEMSA": 15841.68
+    },
+    {
+      "codigo": 7501050617734,
+      "descripcion": "TEMOZOLOMIDA 20MG CAJ C/5 TAB(TEMODAL)",
+      "COSTO DEMSA": 2879.97,
+      "PMP DEMSA": 2879.97
+    },
+    {
+      "codigo": 7501125142956,
+      "descripcion": "EFEDRINA 50MG/2ML CAJ C/10 FA(TENDRIN)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 358468003027,
+      "descripcion": "TIROTROPINA 0.9MG/1ML CAJ C/2 FA(THYROGEN)",
+      "COSTO DEMSA": 39488.0,
+      "PMP DEMSA": 44589
+    },
+    {
+      "codigo": 7613326005838,
+      "descripcion": "TOCILIZUMAB 200MG/10ML CAJ C/1 FA(ROACTEMRA)",
+      "COSTO DEMSA": 11623.0,
+      "PMP DEMSA": 11807
+    },
+    {
+      "codigo": 7613326005821,
+      "descripcion": "TOCILIZUMAB 80MG/4ML CAJ C/1 FA(ROACTEMRA)",
+      "COSTO DEMSA": 4648.0,
+      "PMP DEMSA": 4722
+    },
+    {
+      "codigo": 7506335702983,
+      "descripcion": "TOPOTECAN  4MG/4ML CAJ C/1 FA(CAMTOOP)",
+      "COSTO DEMSA": 6099.0,
+      "PMP DEMSA": 28500
+    },
+    {
+      "codigo": 7730979099530,
+      "descripcion": "TRABECTEDINA  1MG/4ML CAJ C/1 FA(YONDELIS)",
+      "COSTO DEMSA": 62115.0,
+      "PMP DEMSA": 62420.77
+    },
+    {
+      "codigo": 7501124760076,
+      "descripcion": "TRAMADOL 100MG/2ML CAJ C/5 FA(TRADOL)",
+      "COSTO DEMSA": 640.0,
+      "PMP DEMSA": 842.11
+    },
+    {
+      "codigo": 7502209290341,
+      "descripcion": "TRAMADOL 50MG CAJ C/10 TAB(TRADOL)",
+      "COSTO DEMSA": 480.0,
+      "PMP DEMSA": 800
+    },
+    {
+      "codigo": 7502209290358,
+      "descripcion": "TRAMADOL 100MG/10ML GOT FRA(TRADOL)",
+      "COSTO DEMSA": 587.0,
+      "PMP DEMSA": 810.71
+    },
+    {
+      "codigo": 7613326005586,
+      "descripcion": "TRASTUZUMAB 440MG/20ML CAJ C/1 FA(HERCEPTIN)",
+      "COSTO DEMSA": 57895.0,
+      "PMP DEMSA": 58812
+    },
+    {
+      "codigo": 7613326005593,
+      "descripcion": "TRASTUZUMAB 600MG/5ML CAJ C/1 FA(HERCEPTIN SC)",
+      "COSTO DEMSA": 54847.0,
+      "PMP DEMSA": 55716
+    },
+    {
+      "codigo": 7501287621559,
+      "descripcion": "TRASTUZUMAB 440MG/20ML CAJ C/1 FA(TRAZIMERA)",
+      "COSTO DEMSA": 22106.02,
+      "PMP DEMSA": 46711.14
+    },
+    {
+      "codigo": 4260095681324,
+      "descripcion": "TRETINOINA 10MG CAJ C/100 CAP(VESANOID)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502227422502,
+      "descripcion": "TRETINOINA 10MG CAJ C/100 CAP(AMILOGEN)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501124182885,
+      "descripcion": "TRIMEBUTINA/SIMETICONA/GALACTOSIDASA  200/75/45MG CAJ C/32 TAB(LIBERTRIM ALFA)",
+      "COSTO DEMSA": 873.0,
+      "PMP DEMSA": 1033.22
+    },
+    {
+      "codigo": 7501559603559,
+      "descripcion": "TRIOXIDO DE ARSENICO 2MG/1ML CAJ C/10(TRISENOX ASF)",
+      "COSTO DEMSA": 36722.0,
+      "PMP DEMSA": 50000
+    },
+    {
+      "codigo": 7501871730711,
+      "descripcion": "TRIPTORELINA 11.25MG/1IMPLANTE CAJ C/1(PAMORELIN)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501871730704,
+      "descripcion": "TRIPTORELINA 3.75MG/1IMPLANTE CAJ C/1 FA(PAMORELIN)",
+      "COSTO DEMSA": 4386.0,
+      "PMP DEMSA": 5123.38
+    },
+    {
+      "codigo": 7501326007337,
+      "descripcion": "VACUNA RECOMBINANTE TETRAVALENTE CONTRA EL VIRUS DEL PAPILOMA HUMANO  0.5ML/1JERINGA(GARDASIL)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 8054083020167,
+      "descripcion": "VENETOCLAX 10/50/100MG CAJ C/42 TAB(VENCLEXTA)",
+      "COSTO DEMSA": 37312.0,
+      "PMP DEMSA": 37312
+    },
+    {
+      "codigo": 8054083020136,
+      "descripcion": "VENETOCLAX 100MG CAJ C/120 TAB(VENCLEXTA)",
+      "COSTO DEMSA": 172872.0,
+      "PMP DEMSA": 172872
+    },
+    {
+      "codigo": 7501108765134,
+      "descripcion": "VENLAFAXINA  37.5MG CAJ C/20 TAB(EFEXOR XR)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501082243529,
+      "descripcion": "ABEMACICLIB 100MG CAJ C/56 TAB(VERZENIO)",
+      "COSTO DEMSA": 74003.0,
+      "PMP DEMSA": 86167
+    },
+    {
+      "codigo": 7501287631206,
+      "descripcion": "DOXICICLINA 100MG CAJ C/10 TAB(VIBRAMICINA)",
+      "COSTO DEMSA": 517.0,
+      "PMP DEMSA": 760.4
+    },
+    {
+      "codigo": 7506429600102,
+      "descripcion": "VINBLASTINA 10MG/10ML CAJ C/1 FA(DIRANOVYL)",
+      "COSTO DEMSA": 434.91,
+      "PMP DEMSA": 896
+    },
+    {
+      "codigo": 7502251890544,
+      "descripcion": "VINBLASTINA 10MG/10ML CAJ C/1 FA(BLESTINIB)",
+      "COSTO DEMSA": 581.0,
+      "PMP DEMSA": 778
+    },
+    {
+      "codigo": 7506429600270,
+      "descripcion": "VINCRISTINA 1MG/10ML CAJ C/1 FA(NEFIXOL)",
+      "COSTO DEMSA": 593.07,
+      "PMP DEMSA": 1781.25
+    },
+    {
+      "codigo": 7501088504761,
+      "descripcion": "VINORELBINA 20MG CAJ C/1 CAP(NAVELBINE)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501088504778,
+      "descripcion": "VINORELBINA 30MG CAJ C/1 CAP(NAVELBINE)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501125155758,
+      "descripcion": "VITAMINAS 5M/5ML(VITAFUSIN)",
+      "COSTO DEMSA": 181.0,
+      "PMP DEMSA": 261.2
+    },
+    {
+      "codigo": 7506335701528,
+      "descripcion": "DOXORUBICINA 50MG/25ML CAJ C/1 FA(ZODOX)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": 0
+    },
+    {
+      "codigo": 7501328979106,
+      "descripcion": "ZOLPIDEM 10MG CAJ C/30 TAB(STILNOX)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7506429600355,
+      "descripcion": "IFOSFAMIDA 1 G SOL INY CAJA C/1 FA(ALQUIFOS)",
+      "COSTO DEMSA": 543.62,
+      "PMP DEMSA": 1650
+    },
+    {
+      "codigo": 7503000645491,
+      "descripcion": "ONDANSETRON 2 MG AMP CAJA C/3 (AMAL)",
+      "COSTO DEMSA": 615.25,
+      "PMP DEMSA": 1142
+    },
+    {
+      "codigo": 7501326000215,
+      "descripcion": "APREPITANT 1 CAP 125MG /  2 CAP 80MG (EMEND)",
+      "COSTO DEMSA": 2417.0,
+      "PMP DEMSA": 2462.52
+    },
+    {
+      "codigo": 7501125114991,
+      "descripcion": "PENTALMIDÓN 10G/100ML CAJA C/1(HESTAR)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7506335701207,
+      "descripcion": "ONDANSETRON 8MG/4ML CAJ C/3(HT BLOC)",
+      "COSTO DEMSA": 68.0,
+      "PMP DEMSA": 400
+    },
+    {
+      "codigo": 7501125112881,
+      "descripcion": "LIDOCAINA 2% 20 MG/ML FA(PISACAINA)",
+      "COSTO DEMSA": 77.0,
+      "PMP DEMSA": 110.5
+    },
+    {
+      "codigo": 7501125112966,
+      "descripcion": "LIDOCAINA 2%200 MG/10 ML CAJA C/10(PISACAINA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501125112782,
+      "descripcion": "LIDOCAÍNA 1% 10 MG/ML FA(PISACAINA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501326003186,
+      "descripcion": "ERTAPENEM 1G/10ML CAJ C/1 FA(INVANZ)",
+      "COSTO DEMSA": 2079.0,
+      "PMP DEMSA": 2139.86
+    },
+    {
+      "codigo": 650240015687,
+      "descripcion": "CLORURO DE SODIO 0.9% 100 ML FRA(NASALUB MAX SPY)",
+      "COSTO DEMSA": 184.0,
+      "PMP DEMSA": 256.36
+    },
+    {
+      "codigo": 7502268541729,
+      "descripcion": "GLUCONATO DE CALCIO 10% (10 ML) CAJ C/1 FA(GLUCONATO DE CALCIO)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7503007704658,
+      "descripcion": "CPM CITIDIN 5 MONOFOSFATO DISODICO;UTP URIDIN 5 TRIFOSFATO TRISODICO CAJ C/30(NUCLEO CMP FORTE)",
+      "COSTO DEMSA": 430.0,
+      "PMP DEMSA": 690.28
+    },
+    {
+      "codigo": 7502245840227,
+      "descripcion": "ESMOLOL 2.5G/10ML SOL INY CAJ C/2 AMP(TIFESOLP)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502223111202,
+      "descripcion": "LIDOCAINA SOL INY 10% CAJ C/1 FRA 115ML(PHARMACAINE)",
+      "COSTO DEMSA": 177.0,
+      "PMP DEMSA": 553.8
+    },
+    {
+      "codigo": 7502251891183,
+      "descripcion": "PALONOSETRON 0.05MG/ML CAJ C/1 FA DE 5ML(GESENT)",
+      "COSTO DEMSA": 514.0,
+      "PMP DEMSA": 1980
+    },
+    {
+      "codigo": 8715131012748,
+      "descripcion": "FILGRASTIM 300 MCG 1 JGP C/0.5 ML(NEUPOGEN)",
+      "COSTO DEMSA": 5451.0,
+      "PMP DEMSA": 5660.48
+    },
+    {
+      "codigo": 7501124818784,
+      "descripcion": "NILOTINIB 200MG CAJ C/120 CAP (3 CAJ C/40 CAP)(TASIGNA)",
+      "COSTO DEMSA": 69145.0,
+      "PMP DEMSA": 103063.86
+    },
+    {
+      "codigo": 7501050624558,
+      "descripcion": "CLORFENAMINA 4MG CAJ C/20 TAB(CLORO TRIMETON)",
+      "COSTO DEMSA": 91.0,
+      "PMP DEMSA": 138.42
+    },
+    {
+      "codigo": 612197788885,
+      "descripcion": "GLUTAMINA, LACTOBACILLUS REUTERI 15 GR SOB(GLUTAPACK R)",
+      "COSTO DEMSA": 72.0,
+      "PMP DEMSA": 85.82
+    },
+    {
+      "codigo": 7501124182878,
+      "descripcion": "TRIMEBUTINA, SIMETICONA, GALACTOSIDASA 200MG/75MG/45MG CAJ C/24 COM(LIBERTRIM ALFA)",
+      "COSTO DEMSA": 730.0,
+      "PMP DEMSA": 826.79
+    },
+    {
+      "codigo": 7501125124549,
+      "descripcion": "METOCLOPRAMIDA 10MG/2ML CAJ C/6 AMP DE 2ML(PRAMOTIL)",
+      "COSTO DEMSA": 64.0,
+      "PMP DEMSA": 81.3
+    },
+    {
+      "codigo": 7501109930555,
+      "descripcion": "APALUTAMIDA 60MG CAJ C/FRA C/120 TAB(ERLEADA)",
+      "COSTO DEMSA": 112673.12,
+      "PMP DEMSA": 112673.12
+    },
+    {
+      "codigo": 7501764340379,
+      "descripcion": "SEROALBUMINA HUMANA 25% 50ML CAJ C/1FA(ALBUMINA HUMANA GRIFOLS)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502209290853,
+      "descripcion": "BUPRENORFINA 5MG CAJ C/4 PARCHE(SOLORO 7)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501125135460,
+      "descripcion": "KETOROLACO 30MG C/6 TAB SUBLINGUAL (ONEMER SL)",
+      "COSTO DEMSA": 75.0,
+      "PMP DEMSA": 125.8
+    },
+    {
+      "codigo": 7501493874657,
+      "descripcion": "MIDAZOLAM 50MG/10ML CAJ C/5 AMP(SOMNOCAL)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501493873308,
+      "descripcion": "KETOPROFENO 100MG CAJ C/3 FA(TRALIKEN IV)",
+      "COSTO DEMSA": 265.0,
+      "PMP DEMSA": 571.2
+    },
+    {
+      "codigo": 7501349020009,
+      "descripcion": "TRAMADOL SOL INY 100MG/2ML CAJ C/5 AMP(TRAMADOL (AMSA))",
+      "COSTO DEMSA": 39.0,
+      "PMP DEMSA": 151
+    },
+    {
+      "codigo": 8715131010294,
+      "descripcion": "BLINATUMOMAB 35MCG CAJ C/1 FA(BLINCYTO)",
+      "COSTO DEMSA": 33602.22,
+      "PMP DEMSA": 33602.22
+    },
+    {
+      "codigo": 3582180000300,
+      "descripcion": "CABOZANTINIB 20MG CAJ C/30 TAB(APTIMETYX)",
+      "COSTO DEMSA": 159213.0,
+      "PMP DEMSA": 446390.28
+    },
+    {
+      "codigo": 7506335701825,
+      "descripcion": "FLUOROURACILO 250MG/5ML CAJ C/10 FA(ACOFLUT)",
+      "COSTO DEMSA": 642.0,
+      "PMP DEMSA": 3000
+    },
+    {
+      "codigo": 7506429600096,
+      "descripcion": "VINORELBINA 10MG/1ML CAJ C/1 FA(ANIDORET)",
+      "COSTO DEMSA": 247.08,
+      "PMP DEMSA": 1047.2
+    },
+    {
+      "codigo": 8027950210466,
+      "descripcion": "APIXABAN 5MG CAJ C/20 TAB(ELICUIS)",
+      "COSTO DEMSA": 754.0,
+      "PMP DEMSA": 1179.33
+    },
+    {
+      "codigo": 7501559656401,
+      "descripcion": "CULTIVO BCG 30MG CAJ C/4 AMP(CULTIVO BCG SSI)",
+      "COSTO DEMSA": 7490.0,
+      "PMP DEMSA": 11079.46
+    },
+    {
+      "codigo": 7501165000179,
+      "descripcion": "ESPIRONOLACTONA 50MG /FUROSEMIDA 20MG CAJ C/16 TAB(LASILACTON)",
+      "COSTO DEMSA": 593.0,
+      "PMP DEMSA": 865
+    },
+    {
+      "codigo": 7506429600287,
+      "descripcion": "DEXRAZOXANO SOL 500MG CAJ C/1 FA(DEXPEXEL)",
+      "COSTO DEMSA": 2493.48,
+      "PMP DEMSA": 6120
+    },
+    {
+      "codigo": 8027950210527,
+      "descripcion": "APIXABAN 2.5MG CAJ C/60 TAB(ELICUIS)",
+      "COSTO DEMSA": 1944.0,
+      "PMP DEMSA": 3047.16
+    },
+    {
+      "codigo": 7501124819439,
+      "descripcion": "RIBOCICLIB 200MG CAJ C/63 COM(KISQALI)",
+      "COSTO DEMSA": 79907.0,
+      "PMP DEMSA": 101534.67
+    },
+    {
+      "codigo": 7501764340379,
+      "descripcion": "SEROALBUMINA HUMANA 25% CAJ C/1 FRA 50ML(ALBUMINA HUMANA GRIFOLS)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502251891183,
+      "descripcion": "PALONOSETRON 0.25MG/ML CAJ C/1 FA DE 5ML(GESENT)",
+      "COSTO DEMSA": 514.0,
+      "PMP DEMSA": 1980
+    },
+    {
+      "codigo": 372694954014,
+      "descripcion": "PEGASPARGASA 3750UI/5ML CAJ C/1 FA(ONCASPAR)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7506335700675,
+      "descripcion": "TEMOZOLAMIDA 100MG CAJ C/5 CAP(NIMAN)",
+      "COSTO DEMSA": 3745.0,
+      "PMP DEMSA": 17500
+    },
+    {
+      "codigo": 7506335702907,
+      "descripcion": "TEMOZOLOMIDA 20MG CAJ C/5 CAP(NIMAN)",
+      "COSTO DEMSA": 1070.0,
+      "PMP DEMSA": 5000
+    },
+    {
+      "codigo": 7501089803177,
+      "descripcion": "LEVOTIROXINA 100MCG CAJ C/50 COM(KARET)",
+      "COSTO DEMSA": 327.0,
+      "PMP DEMSA": 482
+    },
+    {
+      "codigo": 7501109922949,
+      "descripcion": "USTEKINUMAB 45MG CAJ C/1 JGP(STELARA)",
+      "COSTO DEMSA": 92868.24,
+      "PMP DEMSA": 92868.24
+    },
+    {
+      "codigo": 7502256040067,
+      "descripcion": "DEXAMETASONA 8MG/2ML CAJ C/1 FA(SINKEL)",
+      "COSTO DEMSA": 8.0,
+      "PMP DEMSA": 30
+    },
+    {
+      "codigo": 7501109930357,
+      "descripcion": "USTEKINUMAB 130MG/26ML CAJ C/1 FA(STELARA IV)",
+      "COSTO DEMSA": 92868.24,
+      "PMP DEMSA": 92868.24
+    },
+    {
+      "codigo": 3582186000731,
+      "descripcion": "DIOSMECTITA 3GR CAJ C/10 SOB(IPRIKENE)",
+      "COSTO DEMSA": 286.0,
+      "PMP DEMSA": 437.96
+    },
+    {
+      "codigo": 7501125122446,
+      "descripcion": "ROPIVACAINA 2MG/ML CAJ C/5 AMP DE 20ML(ROPICONEST)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501250810324,
+      "descripcion": "PROPOFOL 200MG/20ML CAJ C/5 AMP(DIPRIVAN)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501493980518,
+      "descripcion": "HALOPERIDOL 5MG/ML CAJ C/6 AMP(PULSIT)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501318600508,
+      "descripcion": "RIVAROXIBAN 10 MG CAJ C/10 COM(XARELTO)",
+      "COSTO DEMSA": 1317.0,
+      "PMP DEMSA": 1664
+    },
+    {
+      "codigo": 7501300408556,
+      "descripcion": "LISINA 125/5MG CAJ C/20 COM(DORIXINA RELAX)",
+      "COSTO DEMSA": 613.0,
+      "PMP DEMSA": 916
+    },
+    {
+      "codigo": 7501277094141,
+      "descripcion": "PANTOZOL 40MG CAJ C/14 TAB(PANTOPRAZOL)",
+      "COSTO DEMSA": 81.0,
+      "PMP DEMSA": 245
+    },
+    {
+      "codigo": 7501125113666,
+      "descripcion": "FENTANILO 0.25MG/5ML CAJ C/5 AMP(FENODID)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501082243512,
+      "descripcion": "ABEMACICLIB 50MG CAJ C/56 TAB(VERZENIO)",
+      "COSTO DEMSA": 74003.0,
+      "PMP DEMSA": 86167
+    },
+    {
+      "codigo": 7500326353413,
+      "descripcion": "LENVATINIB 10MG CAJ C/30 CAP(LENVIXI)",
+      "COSTO DEMSA": 52019.0,
+      "PMP DEMSA": 54017.75
+    },
+    {
+      "codigo": 7500326353420,
+      "descripcion": "LENVATINIB 4MG CAJ C/30 CAP(LENVIXI)",
+      "COSTO DEMSA": 20815.0,
+      "PMP DEMSA": 21615.03
+    },
+    {
+      "codigo": 7501125107030,
+      "descripcion": "CEFALOTINA 1G CAJ C/1 FA(CEFALOTINA)",
+      "COSTO DEMSA": 68.0,
+      "PMP DEMSA": 92.8
+    },
+    {
+      "codigo": 7501125170591,
+      "descripcion": "CEFTRIAXONA 1G CAJ C/1 FA(CEFTRIAXONA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501125106170,
+      "descripcion": "CEFUROXIMA 750 MG CAJ C/1 FA(FUCEROX)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501125124563,
+      "descripcion": "FUROSEMIDA 20MG/2ML CAJ C/5 AMP(HENEXAL)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501493980433,
+      "descripcion": "OMEPRAZOL 40MG/10ML CAJ C/1 FA(PREZOLAX)",
+      "COSTO DEMSA": 49.0,
+      "PMP DEMSA": 381
+    },
+    {
+      "codigo": 7501314704644,
+      "descripcion": "FAMOTIDINA 40MG CAJ C/10 COM(DURATER)",
+      "COSTO DEMSA": 360.0,
+      "PMP DEMSA": 420
+    },
+    {
+      "codigo": 7501125177774,
+      "descripcion": "OMEPRAZOL 40MG/10ML CAJ C/1 FA(PENTREN)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7730979094092,
+      "descripcion": "TAMSULOSINA 0.4 MG CAJ C/30 CAP(ASOFLON)",
+      "COSTO DEMSA": 1397.0,
+      "PMP DEMSA": 1944.99
+    },
+    {
+      "codigo": 7501384502324,
+      "descripcion": "CLONAZEPAM 2.5 MG CAJ C/1 FRA GOT(KRIADEX)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7506359900006,
+      "descripcion": "PRALATREXATO 20MG/ML CAJ C/1FA(FOLOTYN)",
+      "COSTO DEMSA": 25629.0,
+      "PMP DEMSA": 27851.89
+    },
+    {
+      "codigo": 7501871720224,
+      "descripcion": "TAMOXIFENO 20MG CAJ C/14 TAB(TAXUS)",
+      "COSTO DEMSA": 224.0,
+      "PMP DEMSA": 261.25
+    },
+    {
+      "codigo": 7501384541538,
+      "descripcion": "CITALOPRAM 20MG CAJ C/15 TAB(REMICITAL)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501384541545,
+      "descripcion": "CITALOPRAM 20MG CAJ C/30 TAB(REMICITAL)",
+      "COSTO DEMSA": 767.0,
+      "PMP DEMSA": 1044
+    },
+    {
+      "codigo": 7501043163637,
+      "descripcion": "SALBUTAMOL 5MG/ML CAJ C/1 FRA (10ML)(VENTOLIN)",
+      "COSTO DEMSA": 385.0,
+      "PMP DEMSA": 551.53
+    },
+    {
+      "codigo": 8430087025153,
+      "descripcion": "PAZOPANIB 400MG CAJ C/60 TAB(VOTRIENT)",
+      "COSTO DEMSA": 41684.0,
+      "PMP DEMSA": 44778.57
+    },
+    {
+      "codigo": 7501109930357,
+      "descripcion": "USTEKINUMAB 300MG/26ML CAJ C/1 FA(STELARA IV)",
+      "COSTO DEMSA": 92868.24,
+      "PMP DEMSA": 92868.24
+    },
+    {
+      "codigo": 5000456054317,
+      "descripcion": "PROPANOLOL 40MG CAJ C/30 TAB(INDERALICI)",
+      "COSTO DEMSA": 255.0,
+      "PMP DEMSA": 452.93
+    },
+    {
+      "codigo": 7501089803320,
+      "descripcion": "TIAMAZOL 5MG CAJ C/20 TAB(GANGLIOSIDE)",
+      "COSTO DEMSA": 188.0,
+      "PMP DEMSA": 238.6
+    },
+    {
+      "codigo": 7501095452505,
+      "descripcion": "PARACETAMOL 650MG CAJ C/24 TAB(TEMPRA FORTE)",
+      "COSTO DEMSA": 104.0,
+      "PMP DEMSA": 168.46
+    },
+    {
+      "codigo": 7730766000800,
+      "descripcion": "ENFORTUMAB VEDOTINA 30MG CAJ C/1 FA(PADCEV)",
+      "COSTO DEMSA": 22770.0,
+      "PMP DEMSA": 22876
+    },
+    {
+      "codigo": 7501124820596,
+      "descripcion": "ELTROMBOPAG 50MG CAJ C/28 TAB (REVOLADE)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 8715131022631,
+      "descripcion": "BEVACIZUMAB 400MG/16ML CAJ C/1 FA(MVASI)",
+      "COSTO DEMSA": 40247.0,
+      "PMP DEMSA": 40884.3
+    },
+    {
+      "codigo": 8715131022624,
+      "descripcion": "BEVACIZUMAB 100MG/4ML CAJ C/1 FA(MVASI)",
+      "COSTO DEMSA": 11020.0,
+      "PMP DEMSA": 11194.2
+    },
+    {
+      "codigo": 7501092723189,
+      "descripcion": "IXAZOMIB 3MG CAJ C/3 CAP(NINLARO)",
+      "COSTO DEMSA": 124723.0,
+      "PMP DEMSA": 126700
+    },
+    {
+      "codigo": 7501476086220,
+      "descripcion": "LEUPRORELINA 11.25MG CAJ C/1 FA(LORELIN)",
+      "COSTO DEMSA": 6677.0,
+      "PMP DEMSA": 28800
+    },
+    {
+      "codigo": 7501476018627,
+      "descripcion": "LEUPRORELINA 3.75MG CAJ C/1 FA(LORELIN)",
+      "COSTO DEMSA": 2408.0,
+      "PMP DEMSA": 11000
+    },
+    {
+      "codigo": 7730979094566,
+      "descripcion": "AZACITIDINA 25MG/ML CAJ C/1 FA(VIDAZA)",
+      "COSTO DEMSA": 11547.0,
+      "PMP DEMSA": 11730
+    },
+    {
+      "codigo": 7501493980242,
+      "descripcion": "METILPREDNISOLONA 500MG/8ML CAJ C/1 FA(METISONA)",
+      "COSTO DEMSA": 86.0,
+      "PMP DEMSA": 291
+    },
+    {
+      "codigo": 7502213042738,
+      "descripcion": "SALBUTAMOL AER 100UG CAJ C/1 FRA(SALBUTAMOL)",
+      "COSTO DEMSA": 46.0,
+      "PMP DEMSA": 487.61
+    },
+    {
+      "codigo": 7501349022430,
+      "descripcion": "METAMIZOL SODICO 1G/2ML CAJ C/3 AMP(METAMIZOL SODICO)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501008491966,
+      "descripcion": "ACIDO ACETILSALICILICO 500MG CAJ C/40 TAB(ASPIRINA)",
+      "COSTO DEMSA": 45.0,
+      "PMP DEMSA": 63.02
+    },
+    {
+      "codigo": 7501318612655,
+      "descripcion": "ACIDO ACETILSALICILICO 100MG CAJ C/28 TAB(ASPIRINA PROTECT)",
+      "COSTO DEMSA": 131.0,
+      "PMP DEMSA": 173
+    },
+    {
+      "codigo": 7502251890568,
+      "descripcion": "IDARUBICINA 5MG CAJ C/1 FA(LARECIN)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502278220089,
+      "descripcion": "SOLUCION DE ALBUMINA HUMANA 25% 12.5G/50ML CAJ C/1 FA(HI-BUMIN)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501384505356,
+      "descripcion": "LEVETIRACETAM 1000MG CAJ C/30 TAB(TAMLET-T)",
+      "COSTO DEMSA": 1054.0,
+      "PMP DEMSA": 1371.6
+    },
+    {
+      "codigo": 7501326000925,
+      "descripcion": "ETORICOXIB 120MG CAJ C/7 COM (ARCOXIA)",
+      "COSTO DEMSA": 993.0,
+      "PMP DEMSA": 1398.29
+    },
+    {
+      "codigo": 7503007822864,
+      "descripcion": "SEMAGLUTIDA 1.34 MG/ML 3 ML 1 MG/ DOSIS CAJ C/1(OZEMPIC)",
+      "COSTO DEMSA": 5478.0,
+      "PMP DEMSA": 7051.67
+    },
+    {
+      "codigo": 7506442702043,
+      "descripcion": "LETROZOL 2.5 MG CAJ C/30 TAB(RAJENDRA)",
+      "COSTO DEMSA": 782.0,
+      "PMP DEMSA": 2050
+    },
+    {
+      "codigo": 368382997104,
+      "descripcion": "TRIOXIDO DE ARSENICO 10MG/10ML CAJ C/10 FA(ARSENIC TRIOXIDE)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7640133684499,
+      "descripcion": "LENALIDOMIDA 15MG CAJ C/21 CAP(REVLIMID)",
+      "COSTO DEMSA": 110843.0,
+      "PMP DEMSA": 112600
+    },
+    {
+      "codigo": 7501092722380,
+      "descripcion": "VEDOLIZUMAB 300MG CAJ C/1 FA(ENTYVIO)",
+      "COSTO DEMSA": 42329.0,
+      "PMP DEMSA": 43000
+    },
+    {
+      "codigo": 7501299330227,
+      "descripcion": "MONTELUKAST 4MG CAJ C/30 TAB(EVEREST)",
+      "COSTO DEMSA": 640.0,
+      "PMP DEMSA": 917
+    },
+    {
+      "codigo": 7503003746188,
+      "descripcion": "MODAFINILO 200MG TAB CAJ C/28(MODIODAL)",
+      "COSTO DEMSA": 1755.0,
+      "PMP DEMSA": 2696.4
+    },
+    {
+      "codigo": 3664798051520,
+      "descripcion": "ISATUXIMAB 500MG/25 ML CAJ C/1 FA(SARCLISA)",
+      "COSTO DEMSA": 59721.28,
+      "PMP DEMSA": 59721.28
+    },
+    {
+      "codigo": 3664798051537,
+      "descripcion": "ISATUXIMAB 100MG/5ML CAJ C/1 FA(SARCLISA)",
+      "COSTO DEMSA": 11944.26,
+      "PMP DEMSA": 11944.26
+    },
+    {
+      "codigo": 7506335703539,
+      "descripcion": "PEGFILGRASTIM 6MG/0.6ML JPRE CAJ C/1(PELGRAZ)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7613326024389,
+      "descripcion": "POLATUZUMAB VEDOTIN 140 MG CAJ C/1 FA(POLIVY)",
+      "COSTO DEMSA": 261250.0,
+      "PMP DEMSA": 261250
+    },
+    {
+      "codigo": 7506429600256,
+      "descripcion": "TEMOZOLOMIDA 100MG CAJ C/20 CAP(TERA-CAZ)",
+      "COSTO DEMSA": 3116.86,
+      "PMP DEMSA": 22400
+    },
+    {
+      "codigo": 5415062103357,
+      "descripcion": "ENCORAFENIB 75MG CAJ C/168 TAB(BRAFTOVI)",
+      "COSTO DEMSA": 49770.55,
+      "PMP DEMSA": 65003.95
+    },
+    {
+      "codigo": 7798180922146,
+      "descripcion": "MITOMICINA 5MG CAJ C/1 FA(KENOMIX)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501037920147,
+      "descripcion": "TELMISARTAN/AMLODIPINO 80/5MG CAJ C/28 TAB(MICARDIS DUO)",
+      "COSTO DEMSA": 1786.0,
+      "PMP DEMSA": 2337.19
+    },
+    {
+      "codigo": 7501871721504,
+      "descripcion": "PANTOPRAZOL 40 MG CAJ C/28 TAB(ZOLTUM)",
+      "COSTO DEMSA": 942.0,
+      "PMP DEMSA": 1353.69
+    },
+    {
+      "codigo": 7501070635664,
+      "descripcion": "DIFENIDOL 25MG CAJ C/25 TAB(VONTROL)",
+      "COSTO DEMSA": 356.0,
+      "PMP DEMSA": 465
+    },
+    {
+      "codigo": 7613326005845,
+      "descripcion": "TOCILIZUMAB 180MG/ML 0.9ML CAJ C/4 JGP(ROACTEMRA SC)",
+      "COSTO DEMSA": 26836.0,
+      "PMP DEMSA": 27261
+    },
+    {
+      "codigo": 7501009072416,
+      "descripcion": "METFORMINA 500MG CAJ C/30 TAB(GLUCOPHAGE XR)",
+      "COSTO DEMSA": 400.0,
+      "PMP DEMSA": 598.08
+    },
+    {
+      "codigo": 5415062372463,
+      "descripcion": "RITUXIMAB 100MG/10ML CAJ C/1 FA(RUXIENCE)",
+      "COSTO DEMSA": 4922.38,
+      "PMP DEMSA": 9684.42
+    },
+    {
+      "codigo": 5415062372487,
+      "descripcion": "RITUXIMAB 500MG/50ML CAJ C/1 FA(RUXIENCE)",
+      "COSTO DEMSA": 19765.28,
+      "PMP DEMSA": 41210.25
+    },
+    {
+      "codigo": 7501142911306,
+      "descripcion": "SULFASALAZINA 500MG CAJ C/60 GRA(AZULFIDINA)",
+      "COSTO DEMSA": 532.0,
+      "PMP DEMSA": 781.57
+    },
+    {
+      "codigo": 7501125167355,
+      "descripcion": "SIMVASTATINA/EZETIMIBA 10MG/20MG CAJ C/14 TAB(PISATINE-HC)",
+      "COSTO DEMSA": 555.0,
+      "PMP DEMSA": 636.3
+    },
+    {
+      "codigo": 7501165012523,
+      "descripcion": "DUPILUMAB 300MG/2ML INY 2 JGP(DUPIXENT)",
+      "COSTO DEMSA": 32916.0,
+      "PMP DEMSA": 34180.47
+    },
+    {
+      "codigo": 7500463184550,
+      "descripcion": "PACLITAXEL 30MG/5ML CAJ C/1 FA(NIMARIL)",
+      "COSTO DEMSA": 134.0,
+      "PMP DEMSA": 486
+    },
+    {
+      "codigo": 7798180922153,
+      "descripcion": "CICLOFOSFAMIDA 200MG/10ML CAJ C/5 FA(MEXCIKEM)",
+      "COSTO DEMSA": 2675.0,
+      "PMP DEMSA": 5500
+    },
+    {
+      "codigo": 4008491317061,
+      "descripcion": "AMANTADINA 100MG CAJ C/30 TAB(PK MERZ)",
+      "COSTO DEMSA": 481.0,
+      "PMP DEMSA": 675.99
+    },
+    {
+      "codigo": 7502216931831,
+      "descripcion": "ATORVASTATINA 40MG CAJ C/30 TAB(BLODIVIT)",
+      "COSTO DEMSA": 636.0,
+      "PMP DEMSA": 945.82
+    },
+    {
+      "codigo": 7501299309613,
+      "descripcion": "ATORVASTATINA 80MG CAJ C/30 TAB(THOREVA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501089803351,
+      "descripcion": "BIPERIDENO 2MG CAJ C/30 TAB(AKINETON)",
+      "COSTO DEMSA": 353.0,
+      "PMP DEMSA": 498.57
+    },
+    {
+      "codigo": 7501089800084,
+      "descripcion": "CARBAMAZEPINA 200MG CAJ C/20 TAB(NEUGERON LP)",
+      "COSTO DEMSA": 353.0,
+      "PMP DEMSA": 509.16
+    },
+    {
+      "codigo": 7501384541217,
+      "descripcion": "LEVODOPA/CARBIDOPA 250MG/25MG CAJ C/30 TAB(CLOISONE)",
+      "COSTO DEMSA": 503.0,
+      "PMP DEMSA": 684.53
+    },
+    {
+      "codigo": 7501328980034,
+      "descripcion": "CLOPIDOGREL 75MG CAJ C/28 TAB(PLAVIX)",
+      "COSTO DEMSA": 2142.0,
+      "PMP DEMSA": 3025
+    },
+    {
+      "codigo": 7501082212297,
+      "descripcion": "DULOXETINA 60MG CAJ C/28 CAP(CYMBALTA)",
+      "COSTO DEMSA": 2224.0,
+      "PMP DEMSA": 2805
+    },
+    {
+      "codigo": 7501287688750,
+      "descripcion": "ELETRIPTAN 40MG CAJ C/2 TAB(RELPAX)",
+      "COSTO DEMSA": 523.0,
+      "PMP DEMSA": 768.25
+    },
+    {
+      "codigo": 7501088506727,
+      "descripcion": "LACOSAMIDA 100MG CAJ C/28 TAB(VIMPAT)",
+      "COSTO DEMSA": 1292.0,
+      "PMP DEMSA": 1703
+    },
+    {
+      "codigo": 7501088506789,
+      "descripcion": "LACOSAMIDA 200MG CAJ C/28 TAB(VIMPAT)",
+      "COSTO DEMSA": 2271.0,
+      "PMP DEMSA": 3317
+    },
+    {
+      "codigo": 7506335703553,
+      "descripcion": "FILGRASTIM 300UG/0.5ML CAJ C/1 JER(GRANUVEN)",
+      "COSTO DEMSA": 400.0,
+      "PMP DEMSA": 2000
+    },
+    {
+      "codigo": 7501299306635,
+      "descripcion": "OMEPRAZOL 20MG DUAL CAJ C/2X7 CAP(INHIBITRON)",
+      "COSTO DEMSA": 160.0,
+      "PMP DEMSA": 231
+    },
+    {
+      "codigo": 7501299302668,
+      "descripcion": "OMEPRAZOL 20MG DUAL CAJ C/2X14 CAP(INHIBITRON)",
+      "COSTO DEMSA": 238.39,
+      "PMP DEMSA": 394
+    },
+    {
+      "codigo": 7500463184543,
+      "descripcion": "PACLITAXEL 300MG/50ML CAJ C/1 FA(NIMARIL)",
+      "COSTO DEMSA": 1070.0,
+      "PMP DEMSA": 2868
+    },
+    {
+      "codigo": 8902220113435,
+      "descripcion": "LAMOTRIGINA DISPER 50MG CAJ C/30 TAB(TORLAMO DT)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 8902220113428,
+      "descripcion": "LAMOTRIGINA DISPER 100MG CAJ C/30 TAB(TORLAMO DT)",
+      "COSTO DEMSA": 629.0,
+      "PMP DEMSA": 792.44
+    },
+    {
+      "codigo": 7501088507670,
+      "descripcion": "LEVETIRACETAM 500MG CAJ C/30(KEPPRA)",
+      "COSTO DEMSA": 1396.0,
+      "PMP DEMSA": 1913
+    },
+    {
+      "codigo": 7613326005685,
+      "descripcion": "BENSERAZIDA/LEVODOPA 100MG/25MG CAJ C/100 COM(MADOPAR)",
+      "COSTO DEMSA": 1343.0,
+      "PMP DEMSA": 2024
+    },
+    {
+      "codigo": 7503003746133,
+      "descripcion": "MEMANTINA 10MG CAJ C/28 TAB(EBIXA)",
+      "COSTO DEMSA": 971.0,
+      "PMP DEMSA": 1325
+    },
+    {
+      "codigo": 7503003746379,
+      "descripcion": "MEMANTINA 20MG CAJ C/28 TAB(EBIXA)",
+      "COSTO DEMSA": 1788.0,
+      "PMP DEMSA": 2089
+    },
+    {
+      "codigo": 7501701403204,
+      "descripcion": "OXCARBAZEPINA 300MG CAJ C/15 TAB(KALLION XR)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501701403211,
+      "descripcion": "OXCARBAZEPINA 600MG CAJ C/15 TAB(KALLION XR)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 5000456054300,
+      "descripcion": "PROPANOLOL 10MG CAJ C/50 TAB(INDERALICI)",
+      "COSTO DEMSA": 139.0,
+      "PMP DEMSA": 244.08
+    },
+    {
+      "codigo": 8903855060002,
+      "descripcion": "QUETIAPINA 100MG CAJ C/30 TAB(QMIND)",
+      "COSTO DEMSA": 937.0,
+      "PMP DEMSA": 1149.31
+    },
+    {
+      "codigo": 8903855081427,
+      "descripcion": "RASAGILINA 1MG CAJ C/30 TAB(QATTIQ)",
+      "COSTO DEMSA": 2031.0,
+      "PMP DEMSA": 2300.93
+    },
+    {
+      "codigo": 7501124813994,
+      "descripcion": "RIVASTIGMINA (PARCHE) 9MG CAJ C/30 PCHE(EXELON)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501088507021,
+      "descripcion": "ROTIGOTINA (PARCHE) 2MG CAJ C/7 PCHE(NUBRENZA)",
+      "COSTO DEMSA": 855.0,
+      "PMP DEMSA": 1255.1
+    },
+    {
+      "codigo": 7501088507038,
+      "descripcion": "ROTIGOTINA (PARCHE) 4MG CAJ C/14 PCHE(NUBRENZA)",
+      "COSTO DEMSA": 1711.0,
+      "PMP DEMSA": 2285
+    },
+    {
+      "codigo": 7501088507052,
+      "descripcion": "ROTIGOTINA (PARCHE) 6MG CAJ C/14 PCHE(NUBRENZA)",
+      "COSTO DEMSA": 1711.0,
+      "PMP DEMSA": 2135
+    },
+    {
+      "codigo": 7501088507045,
+      "descripcion": "ROTIGOTINA (PARCHE) 8MG CAJ C/14 PCHE(NUBRENZA)",
+      "COSTO DEMSA": 1711.0,
+      "PMP DEMSA": 2513.5
+    },
+    {
+      "codigo": 7501125155970,
+      "descripcion": "SERTRALINA 50MG CAJ C/14 TAB(EQUIVAC)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501100089108,
+      "descripcion": "TOPIRAMATO 100MG CAJ C/20 TAB(TOPAMAX)",
+      "COSTO DEMSA": 1273.0,
+      "PMP DEMSA": 1656.44
+    },
+    {
+      "codigo": 7501089800664,
+      "descripcion": "VALPROATO DE MAGNESIO 600MG CAJ C/20 TAB(ATEMPERATOR LP)",
+      "COSTO DEMSA": 935.0,
+      "PMP DEMSA": 1348.25
+    },
+    {
+      "codigo": 5391507146939,
+      "descripcion": "SACITUZUMAB GOVITECAN 180MG CAJ C/1 FA(TRODELVY)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501088508271,
+      "descripcion": "CETIRIZINA 10MG CAJ C/20 TAB(VIRLIX)",
+      "COSTO DEMSA": 507.0,
+      "PMP DEMSA": 740
+    },
+    {
+      "codigo": 7501318692725,
+      "descripcion": "DAROLUTAMIDA 300MG CAJ C/120 TAB(NUBEQA)",
+      "COSTO DEMSA": 83826.0,
+      "PMP DEMSA": 85154
+    },
+    {
+      "codigo": 7501088505355,
+      "descripcion": "DEXAMETASONA/NEOMICINA 0.9/3.5MG GOT C/5ML(ALIN OFT)",
+      "COSTO DEMSA": 80.0,
+      "PMP DEMSA": 114.15
+    },
+    {
+      "codigo": 7500464227911,
+      "descripcion": "TRASTUZUMAB 440MG/20ML CAJ C/1 FA(HERZUMA)",
+      "COSTO DEMSA": 13375.0,
+      "PMP DEMSA": 38500
+    },
+    {
+      "codigo": 7502254000193,
+      "descripcion": "ANASTROZOL 1MG CAJ C/28 TAB(PROBITOR)",
+      "COSTO DEMSA": 1070.0,
+      "PMP DEMSA": 5000
+    },
+    {
+      "codigo": 7501075726268,
+      "descripcion": "BLEOMICINA 15UI/10ML CAJ C/1 FA(NOVAMEXAN)",
+      "COSTO DEMSA": 1605.0,
+      "PMP DEMSA": 5000
+    },
+    {
+      "codigo": 7501109927968,
+      "descripcion": "IBRUTINIB 140MG CAJ C/90 CAP(IMBRUVICA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501109927975,
+      "descripcion": "IBRUTINIB140MG CAJ C/120 CAP(IMBRUVICA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501384541521,
+      "descripcion": "HALOPERIDOL 5MG/ML CAJ C/6 AMP(HALOPERIL)",
+      "COSTO DEMSA": 647.0,
+      "PMP DEMSA": 880.11
+    },
+    {
+      "codigo": 7502213140250,
+      "descripcion": "ERITROPOYETINA HUMANA RECOMBINANTE 50000 UI/10ML SOL INY CAJ C/1 FA(BIOYETIN)",
+      "COSTO DEMSA": 3748.3,
+      "PMP DEMSA": 6677
+    },
+    {
+      "codigo": 7506429600294,
+      "descripcion": "AZACITIDINA 100MG CAJ C/1 FA(DESOXIUL)",
+      "COSTO DEMSA": 5564.34,
+      "PMP DEMSA": 9384
+    },
+    {
+      "codigo": 7506335700767,
+      "descripcion": "ETOPOSIDO 100MG/5ML CAJ C/1 FA(CAVEP)",
+      "COSTO DEMSA": 161.0,
+      "PMP DEMSA": 750
+    },
+    {
+      "codigo": 7501125124075,
+      "descripcion": "CIPROFLOXACINO 200MG/100ML CAJ C/1 FA(CIPROBAC)",
+      "COSTO DEMSA": 326.0,
+      "PMP DEMSA": 516.3
+    },
+    {
+      "codigo": 7501082224269,
+      "descripcion": "TERIPARATIDA 250MCG/ML CAJ C/1 PLUMA C/CAR(FORTEO COLTER)",
+      "COSTO DEMSA": 9137.0,
+      "PMP DEMSA": 11993
+    },
+    {
+      "codigo": 7502216936072,
+      "descripcion": "APREPITANT 125/80MG CAJ C/3 CAP(IRAMENOL)",
+      "COSTO DEMSA": 1148.0,
+      "PMP DEMSA": 1432.44
+    },
+    {
+      "codigo": 7502245841538,
+      "descripcion": "NOREPINEFRINA 4MG/4ML CAJ C/1 FA(NORAVE)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501109930340,
+      "descripcion": "USTEKINUMAB 90MG/1ML CAJ C/1 FA(STELARA)",
+      "COSTO DEMSA": 92868.24,
+      "PMP DEMSA": 92868.24
+    },
+    {
+      "codigo": 612197722100,
+      "descripcion": "L-GLUTAMINA 15GR SOB(GLUTAPACK)",
+      "COSTO DEMSA": 69.0,
+      "PMP DEMSA": 92.21
+    },
+    {
+      "codigo": 7502216933767,
+      "descripcion": "FILGRASTIM 30MCG/0.5ML CAJ C/1 JER(ZARZIO)",
+      "COSTO DEMSA": 810.0,
+      "PMP DEMSA": 3154.84
+    },
+    {
+      "codigo": 7502216935754,
+      "descripcion": "PEGFILGRASTIM 6MG/0.6ML CAJ C/1 JER(ZIEXTENZO)",
+      "COSTO DEMSA": 16548.0,
+      "PMP DEMSA": 22869.08
+    },
+    {
+      "codigo": 7501314701322,
+      "descripcion": "CEFIXIMA 400MG CAJ C/6 CAP(BIOMICS)",
+      "COSTO DEMSA": 997.0,
+      "PMP DEMSA": 1300
+    },
+    {
+      "codigo": 7501300409805,
+      "descripcion": "ENALAPRIL 10MG CAJ C/10 COM(ENALADIL)",
+      "COSTO DEMSA": 218.0,
+      "PMP DEMSA": 326
+    },
+    {
+      "codigo": 7501349020412,
+      "descripcion": "HIERRO DEXTRAN 100MG/2ML CAJ C/3 AMP(HIERRO DEXTRAN)",
+      "COSTO DEMSA": 65.0,
+      "PMP DEMSA": 168
+    },
+    {
+      "codigo": 7502251890612,
+      "descripcion": "EXEMESTANO 25MG CAJ C/30 TAB(ZURIMACIN)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7506429600140,
+      "descripcion": "TEMOZOLOMIDA 100MG FRA C/5 CAP(TERA-CAZ)",
+      "COSTO DEMSA": 1902.73,
+      "PMP DEMSA": 10640
+    },
+    {
+      "codigo": 7290385301,
+      "descripcion": "MIRVETIXUMAB SORAVTANSINE-GYNX 100MG/20ML CAJ C/1 FA(ELAHERE)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502216935617,
+      "descripcion": "FULVESTRANT 250MG/5ML CAJ C/2 FA(LEFORUL)",
+      "COSTO DEMSA": 11736.0,
+      "PMP DEMSA": 20548.08
+    },
+    {
+      "codigo": "7501908251264 ",
+      "descripcion": "ESMOLOL 2.5G/10ML CAJ C/2 AMP(TAMGHO)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7506404300157,
+      "descripcion": "ALBUMINA HUMANA 25% 50 ML CAJ C/1 FA(ALBUNATE)",
+      "COSTO DEMSA": 845.0,
+      "PMP DEMSA": 1668
+    },
+    {
+      "codigo": 7502223700178,
+      "descripcion": "BROMURO DE IPRATROPIO/SALBUTAMOL 0.5/2.5MG CAJ C/10 AMP(BRASSPO)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 354312225133,
+      "descripcion": "RETINOL/NEOMICINA 28G CAJA C/1 UNG(VITACILINA)",
+      "COSTO DEMSA": 38.0,
+      "PMP DEMSA": 61.29
+    },
+    {
+      "codigo": 7501075726299,
+      "descripcion": "DACARBAZINA 200MG CAJ C/1 FA(ONECOBAX)",
+      "COSTO DEMSA": 1391.0,
+      "PMP DEMSA": 3800
+    },
+    {
+      "codigo": 7613326026024,
+      "descripcion": "ENTRECTINIB 200MG CAJ C/90 CAP(ROZLYTREK)",
+      "COSTO DEMSA": 125801.0,
+      "PMP DEMSA": 127795
+    },
+    {
+      "codigo": 7501299310328,
+      "descripcion": "BEVACIZUMAB 100MG/4ML CAJ C/1 FA(EFFIVIA)",
+      "COSTO DEMSA": 3999.0,
+      "PMP DEMSA": 8645
+    },
+    {
+      "codigo": 7501233210004,
+      "descripcion": "DASATINIB 50MG CAJ C/60 TAB(SPRYCEL)",
+      "COSTO DEMSA": 78441.0,
+      "PMP DEMSA": 81455.14
+    },
+    {
+      "codigo": 7506442702074,
+      "descripcion": "IMATINIB 100 MG CAJ C/60 TAB(INCITI)",
+      "COSTO DEMSA": 6270.0,
+      "PMP DEMSA": 14642.85
+    },
+    {
+      "codigo": 7501493873872,
+      "descripcion": "PARACETAMOL 1G/100ML CAJ C/1 FA(LUNAZOL)",
+      "COSTO DEMSA": 71.0,
+      "PMP DEMSA": 250
+    },
+    {
+      "codigo": 358468004116,
+      "descripcion": "AGALSIDASE BETA 5MG CAJ C/1 FA(FABRAZYME)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 358468004017,
+      "descripcion": "AGALSIDASE BETA 35MG CAJ C/1 FA(FABRAZYME)",
+      "COSTO DEMSA": 64168.57,
+      "PMP DEMSA": 64168.57
+    },
+    {
+      "codigo": 7502245840906,
+      "descripcion": "NITROPRUSIATO DE SODIO 50MG/2ML CAJ C/1 FA(NUCATREX)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501075726275,
+      "descripcion": "CICLOFOSFAMIDA 1000MG CAJ C/1 FA(MEXCIKEM)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501124810900,
+      "descripcion": "SENOSIDOS A-B 187 MG C/60 TAB(SENOKOT)",
+      "COSTO DEMSA": 153.0,
+      "PMP DEMSA": 231.68
+    },
+    {
+      "codigo": 7501027800145,
+      "descripcion": "VACUNA CONTRA HERPES ZOSTER 0.5ML(SHINGRIX)",
+      "COSTO DEMSA": 2505.14,
+      "PMP DEMSA": 3450
+    },
+    {
+      "codigo": 8020030091252,
+      "descripcion": "SULODEXIDA 25MG CAJ C/50 CAP(VESSEL DUE F)",
+      "COSTO DEMSA": 706.0,
+      "PMP DEMSA": 829.5
+    },
+    {
+      "codigo": 7613326005753,
+      "descripcion": "PEGINTERFERON ALFA 2A 180MCG/0.5ML JGP CAJ C/1(PEGASYS)",
+      "COSTO DEMSA": 5976.0,
+      "PMP DEMSA": 6071
+    },
+    {
+      "codigo": 7501125163777,
+      "descripcion": "DULOXETINA 60MG CAJ C/28 CAP(DULPICAP)",
+      "COSTO DEMSA": 571.0,
+      "PMP DEMSA": 957.7
+    },
+    {
+      "codigo": 7501701400562,
+      "descripcion": "FIMASARTAN 60MG TAB CAJ C/20(ARAHKOR)",
+      "COSTO DEMSA": 944.0,
+      "PMP DEMSA": 1316.75
+    },
+    {
+      "codigo": 7501088589676,
+      "descripcion": "INMUNOGLOBULINA HUMANA SC, 4G/20ML CAJ C/1 FA(HIZENTRA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501125105210,
+      "descripcion": "CLINDAMICINA 300MG/2ML CAJA C/1 AMP(INDAMID)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501027800152,
+      "descripcion": "BELIMUMAB SC INJ AI 200MG/ML CAJ C/4 PLUMAS PRECARGADAS(BENLYSTIA)",
+      "COSTO DEMSA": 19576.0,
+      "PMP DEMSA": 21028.68
+    },
+    {
+      "codigo": 304090005724,
+      "descripcion": "DEXMEDETOMIDINA 200MCG/2ML CAJ C/5 FA(PRECEDEX)",
+      "COSTO DEMSA": 2808.0,
+      "PMP DEMSA": 4897.52
+    },
+    {
+      "codigo": 5415062367445,
+      "descripcion": "BOSUTINIB 500MG CAJ C/28 TAB(BOSULIF)",
+      "COSTO DEMSA": 60783.76,
+      "PMP DEMSA": 83475.22
+    },
+    {
+      "codigo": 7501299330241,
+      "descripcion": "EVEREST 5MG CAJ C/30 TAB(MONTELUKAST SODICO)",
+      "COSTO DEMSA": 579.0,
+      "PMP DEMSA": 830
+    },
+    {
+      "codigo": 7501314704552,
+      "descripcion": "BUMETANIDA 1MG CAJ C/20 COMP(MICCIL)",
+      "COSTO DEMSA": 271.0,
+      "PMP DEMSA": 340
+    },
+    {
+      "codigo": 5415062391594,
+      "descripcion": "BINIMETINIB 15MG CAJ C/84 TABS(MEKTOVI)",
+      "COSTO DEMSA": 25410.51,
+      "PMP DEMSA": 33073.78
+    },
+    {
+      "codigo": 7501125111754,
+      "descripcion": "FOSFATO DE POTASIO SOL INY 10 ML (FP-20)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501764340508,
+      "descripcion": "ALBUMINA HUMANA 50ML CAJ C/1 FA(ALBUMINA HUMANA  GRIFOLS AL 20%)",
+      "COSTO DEMSA": 712.0,
+      "PMP DEMSA": 1668
+    },
+    {
+      "codigo": 8470007307976,
+      "descripcion": "OFATUMUMAB 20MG/0.4ML CAJ C/1 FA(KESIMPTA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501124820619,
+      "descripcion": "OFATUMUMAB 20MG/0.4ML SOL INY CAJ C/1 JPRELL (BONSPRI)",
+      "COSTO DEMSA": 46246.0,
+      "PMP DEMSA": 46979.16
+    },
+    {
+      "codigo": 7501043100434,
+      "descripcion": "TRAMETINIB 0.5MG CAJ C/30 CAPS(MEKINIST)",
+      "COSTO DEMSA": 32583.0,
+      "PMP DEMSA": 37218.93
+    },
+    {
+      "codigo": 7501043100373,
+      "descripcion": "DABRAFENIB 75MG CAJ C/28 CAPS(TAFINLAR)",
+      "COSTO DEMSA": 35299.0,
+      "PMP DEMSA": 40320.51
+    },
+    {
+      "codigo": 7506429600393,
+      "descripcion": "METOTREXATO 2.5MG CAJ C/50 TAB (ULMEXTRAL)",
+      "COSTO DEMSA": 218.0,
+      "PMP DEMSA": 849.07
+    },
+    {
+      "codigo": 7500463184598,
+      "descripcion": "BORTEZOMIB 3.5MG CAJ C/1 FA(BIZMI)",
+      "COSTO DEMSA": 3724.0,
+      "PMP DEMSA": 15824
+    },
+    {
+      "codigo": 7501299335017,
+      "descripcion": "IMIQUIMOD 5% CREMA TUB C/3GR(QUIMARA-1)",
+      "COSTO DEMSA": 1093.0,
+      "PMP DEMSA": 1575
+    },
+    {
+      "codigo": 5415062378847,
+      "descripcion": "DACOMITINIB 30MG CAJ C/30 TAB (VIZIMPRO)",
+      "COSTO DEMSA": 39283.0,
+      "PMP DEMSA": 44394.53
+    },
+    {
+      "codigo": 7506404300102,
+      "descripcion": "INMUNOGLOBULINA HUMANA SC, 2G/10ML CAJ C/1 FA(HIZENTRA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501287611000,
+      "descripcion": "ANIDULAFUNGINA 100MG CAJ C/1 FA(EQUALTHA)",
+      "COSTO DEMSA": 3421.0,
+      "PMP DEMSA": 5975.5
+    },
+    {
+      "codigo": 7501287606211,
+      "descripcion": "CEFTAZIDIMA/AVIBACTAM 2G/0.5G CAJ C/10 FA(ZAVICEFTA)",
+      "COSTO DEMSA": 27882.0,
+      "PMP DEMSA": 32040.87
+    },
+    {
+      "codigo": 7501108718147,
+      "descripcion": "VENLAFAXINA  75MG CAJ C/20 TAB (EFEXOR XR)",
+      "COSTO DEMSA": 1354.0,
+      "PMP DEMSA": 1937.49
+    },
+    {
+      "codigo": 7501701400869,
+      "descripcion": "FAMPRIDINA 10MG CAJ C/56 TAB (4 FCOS C/14 TAB) (FAMPYRA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501250811093,
+      "descripcion": "BACLOFENO 20MG CAJ C/30 TAB(MYLINAX)",
+      "COSTO DEMSA": 1726.0,
+      "PMP DEMSA": 2055.37
+    },
+    {
+      "codigo": 7501298234601,
+      "descripcion": "LEVOTIROXINA SODICA 100MCG CAJ C/50 TAB(EUTIROX)",
+      "COSTO DEMSA": 519.0,
+      "PMP DEMSA": 752.99
+    },
+    {
+      "codigo": 7501446000904,
+      "descripcion": "COLECALCIFEROL 1600UI CAJ C/50 TAB(VALMETROL3)",
+      "COSTO DEMSA": 200.0,
+      "PMP DEMSA": 281
+    },
+    {
+      "codigo": 7501559606451,
+      "descripcion": "EPOETINA THETA 30000UI/1ML CAJ C/1 FA (EPORATIO)",
+      "COSTO DEMSA": 5173.0,
+      "PMP DEMSA": 7216
+    },
+    {
+      "codigo": 7613326005678,
+      "descripcion": "LEVODOPA/BENSERAZIDA 100MG/25MG CAJ C/30 TAB(MADOPAR)",
+      "COSTO DEMSA": 442.0,
+      "PMP DEMSA": 667
+    },
+    {
+      "codigo": 7613326017749,
+      "descripcion": "OCRELIZUMAB 300MG/10ML CAJ C/1 FA(OCREVUS (PROGRAMA POR TI 10%))",
+      "COSTO DEMSA": 207222.0,
+      "PMP DEMSA": 210506
+    },
+    {
+      "codigo": 7501050600071,
+      "descripcion": "ACETATO DE NOMOGESTROL/ESTRADIOL 2.5/1.5MG CAJ C/28 TAB(ZOELY)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7613326034319,
+      "descripcion": "PERTUZUMAB/TRASTUZUMAB 1200MG/600MG CAJ C/1 FRA(PHESGO)",
+      "COSTO DEMSA": 190059.76,
+      "PMP DEMSA": 216617
+    },
+    {
+      "codigo": 7613326034364,
+      "descripcion": "PERTUZUMAB/TRASTUZUMAB 600MG/600MG CAJ C/1 FRA(PHESGO)",
+      "COSTO DEMSA": 105922.36,
+      "PMP DEMSA": 120723
+    },
+    {
+      "codigo": 7506429600461,
+      "descripcion": "FLUOROURACILO 250MG/10ML CAJ C/10 FRA(ULSACIL)",
+      "COSTO DEMSA": 559.17,
+      "PMP DEMSA": 1750
+    },
+    {
+      "codigo": 7501895141968,
+      "descripcion": "VACUNA ANTIPERTUSSIS ACELULAR 0.5ML CAJ/1 FA(ADACEL BOOST)",
+      "COSTO DEMSA": 514.0,
+      "PMP DEMSA": 820
+    },
+    {
+      "codigo": 7501125102806,
+      "descripcion": "INSULINA HUMANA DE ACCION RAPIDA 100UI/10ML CAJ C/1 FA(INSULEX R)",
+      "COSTO DEMSA": 398.0,
+      "PMP DEMSA": 505.5
+    },
+    {
+      "codigo": 7501701400159,
+      "descripcion": "NATALIZUMAB 300MG/ML CAJ C/1 FA(TYSABRI)",
+      "COSTO DEMSA": 56497.0,
+      "PMP DEMSA": 56871.36
+    },
+    {
+      "codigo": 7501109931132,
+      "descripcion": "GUSELKUMAB 100MG/ML CAJA C/1 (TREMFYA)",
+      "COSTO DEMSA": 69310.05,
+      "PMP DEMSA": 69310.05
+    },
+    {
+      "codigo": 7501390914906,
+      "descripcion": "ACEMETACINA 90MG CAJ C/28 CAP(FLARICEL)",
+      "COSTO DEMSA": 692.0,
+      "PMP DEMSA": 924
+    },
+    {
+      "codigo": 7501390914913,
+      "descripcion": "ACEMETACINA 90MG CAJA C/14 CAP(FLARICEL)",
+      "COSTO DEMSA": 435.0,
+      "PMP DEMSA": 561
+    },
+    {
+      "codigo": 7501559603559,
+      "descripcion": "TRIOXIDO DE ARSENICO 2MG/1ML CAJ C/1 (TRISENOX)",
+      "COSTO DEMSA": 36722.0,
+      "PMP DEMSA": 50000
+    },
+    {
+      "codigo": 5713219574488,
+      "descripcion": "NATALIZUMAB 150MG/ML CAJ C/2 JER(TYSABRI)",
+      "COSTO DEMSA": 56497.0,
+      "PMP DEMSA": 56871.4
+    },
+    {
+      "codigo": 7451000602955,
+      "descripcion": "VACUNA RECOMBINANTE NONAVALENTE CONTRA VPH (6,11.16,18,31,33, 45, 52, 58) 0.5ML CAJ C/1 JER(GARDASIL 9)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 5000456077453,
+      "descripcion": "TRASTUZUMAB DERUXTECAN 100 MG CAJ C/1 FA(ENHERTU)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501109931200,
+      "descripcion": "AMIVANTAMAB 350MG/7ML CAJ C/1 FA(RYBREVANT (P))",
+      "COSTO DEMSA": 36903.61,
+      "PMP DEMSA": 36903.61
+    },
+    {
+      "codigo": 7502253890122,
+      "descripcion": "COMPLEJO DE PROTOMBINA HUMANA  500 UI/20ML CAJ C/1 FA(OCTAPRO)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501125142895,
+      "descripcion": "LIDOCAINA 10G/100ML FA C/115ML(PISACAINA SPRAY)",
+      "COSTO DEMSA": 316.0,
+      "PMP DEMSA": 406.4
+    },
+    {
+      "codigo": 4408750003,
+      "descripcion": "TEPOTINIB 225MG CAJ C/60 TAB(TEPOTINIB)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7730766000787,
+      "descripcion": "LURBINECTEDINA 4 MG CAJ C/1 FA(ZEPZELCA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 372187010135,
+      "descripcion": "ELACESTRANT 86MG CAJA C/28 TAB(ORSERDU)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7500464605931,
+      "descripcion": "GILTERITINIB 40MG CAJ C/90 TAB (XOSPATA)",
+      "COSTO DEMSA": 440342.0,
+      "PMP DEMSA": 447321
+    },
+    {
+      "codigo": 7501299310335,
+      "descripcion": "BEVACIZUMAB 400MG/16ML CAJ C/1(EFFIVIA)",
+      "COSTO DEMSA": 13500.0,
+      "PMP DEMSA": 31546.2
+    },
+    {
+      "codigo": 7502251890704,
+      "descripcion": "MITOXANTRONA 20MG/10ML CAJ C/1 FA(TONAXTEN)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501314703418,
+      "descripcion": "MELOXICAM 7.5MG CAJ C/20 TAB(EXEL)",
+      "COSTO DEMSA": 598.0,
+      "PMP DEMSA": 800
+    },
+    {
+      "codigo": 7501123013302,
+      "descripcion": "KETOPROFENO;VITAMINA B 50000UI/2ML CAJ C/5 AMP(BEDOYECTA TRI)",
+      "COSTO DEMSA": 502.0,
+      "PMP DEMSA": 627.95
+    },
+    {
+      "codigo": 7506335703560,
+      "descripcion": "FILGRASTIM 300MCG(30MU)/0.5ML CAJ C/5 JER(GRANUVEN)",
+      "COSTO DEMSA": 1800.0,
+      "PMP DEMSA": 9000
+    },
+    {
+      "codigo": 7501109930135,
+      "descripcion": "HALOPERIDOL 2 MG/ML 30ML CAJ C/1 FA(HALDOL)",
+      "COSTO DEMSA": 663.0,
+      "PMP DEMSA": 877.13
+    },
+    {
+      "codigo": 7501165001862,
+      "descripcion": "LEFLUNOMIDA 20MG CAJ C/30 TAB(ARAVA)",
+      "COSTO DEMSA": 3889.0,
+      "PMP DEMSA": 5275
+    },
+    {
+      "codigo": 7501124811228,
+      "descripcion": "MICOFENOLATO SODICO 360MG CAJ C/120 TAB(MYFORTIC)",
+      "COSTO DEMSA": 11204.0,
+      "PMP DEMSA": 13254.2
+    },
+    {
+      "codigo": 7501299309698,
+      "descripcion": "ESOMEPRAZOL 40 MG CAJ C/ 1 FA(TRONIUM IV)",
+      "COSTO DEMSA": 140.39,
+      "PMP DEMSA": 290
+    },
+    {
+      "codigo": 7506022327635,
+      "descripcion": "SALBUTAMOL AEROSOL 100MCG CAJ C/1 F C/200 DOSIS(BRESALTEC)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7730766000794,
+      "descripcion": "ENFORTUMAB VEDOTINA 20MG CAJ C/1 FA(PADCEV)",
+      "COSTO DEMSA": 15166.0,
+      "PMP DEMSA": 15238
+    },
+    {
+      "codigo": 371334100019,
+      "descripcion": "IVOSIDENIB 250MG CAJ C/60 TAB(TIBSOVO)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 5415062379998,
+      "descripcion": "BEVACIZUMAB 400 MG/16 ML CAJ C/1 FA(ZIRABEV)",
+      "COSTO DEMSA": 23955.88,
+      "PMP DEMSA": 39497.3
+    },
+    {
+      "codigo": 7501328979090,
+      "descripcion": "ZOLPIDEM 10MG CAJ C/10 TAB(STILNOX)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501027800114,
+      "descripcion": "VACUNA ANTIINFLUENZA 5ML CAJA C/10 FA(FLUZACTAL TETRA)",
+      "COSTO DEMSA": 2618.0,
+      "PMP DEMSA": 9630
+    },
+    {
+      "codigo": 7503003746287,
+      "descripcion": "ESCITALOPRAM 20MG CAJ C/14 TAB(LEXAPRO)",
+      "COSTO DEMSA": 1410.0,
+      "PMP DEMSA": 2081
+    },
+    {
+      "codigo": 7500464460608,
+      "descripcion": "PROPOFOL 200MG/20ML CAJ C/5 AMP(PRIGADEF)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501326000871,
+      "descripcion": "ETORICOXIB 60MG CAJ C/28 TAB(ARCOXIA)",
+      "COSTO DEMSA": 1516.0,
+      "PMP DEMSA": 2134.31
+    },
+    {
+      "codigo": 7501037946161,
+      "descripcion": "TELMISARTAN 40MG CAJ C/28 TAB(MICARDIS)",
+      "COSTO DEMSA": 1030.0,
+      "PMP DEMSA": 1426.09
+    },
+    {
+      "codigo": 7501070903695,
+      "descripcion": "SIMETICONA/TRIMEBUTINA 200MG/75MG CAJ C/24 TAB(LIBERTRIM SII)",
+      "COSTO DEMSA": 718.0,
+      "PMP DEMSA": 849.02
+    },
+    {
+      "codigo": 7501070903688,
+      "descripcion": "SIMETICONA/TRIMEBUTINA 100MG/37.5MG  CAJ C/20 TAB(LIBERTRIM SII)",
+      "COSTO DEMSA": 434.0,
+      "PMP DEMSA": 513.01
+    },
+    {
+      "codigo": 7501299330166,
+      "descripcion": "CLOPIDOGREL 75MG CAJ C/28 TAB(DEGREGAN)",
+      "COSTO DEMSA": 844.0,
+      "PMP DEMSA": 1186
+    },
+    {
+      "codigo": 7501293201936,
+      "descripcion": "COLECALCIFEROL 4000 UI CAJ C/60 TAB(HISTOFIL)",
+      "COSTO DEMSA": 325.0,
+      "PMP DEMSA": 453.4
+    },
+    {
+      "codigo": 7502226293790,
+      "descripcion": "TELMISARTAN 40MG C/14 TAB (TELMISARTAN)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501277028702,
+      "descripcion": "ROSUVASTATINA 10 MG CAJ C/30 TAB(ROSUVASTATINA PROTE)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7503006916533,
+      "descripcion": "MIRTAZAPINA 30 MG CAJ C/30 TAB(ZAPEX)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502244510091,
+      "descripcion": "HILANO G-F20 8MG/ML CAJ C/1 JER(SYNVISC ONE)",
+      "COSTO DEMSA": 11824.0,
+      "PMP DEMSA": 14388.6
+    },
+    {
+      "codigo": 7502241941614,
+      "descripcion": "VACUNA ANTIVARICELA ATENUADA 0.65ML CAJ C/1 AMP(ZOSTAVAX (P))",
+      "COSTO DEMSA": 2408.0,
+      "PMP DEMSA": 4250
+    },
+    {
+      "codigo": 7501314705269,
+      "descripcion": "DULOXETINA 30MG CAJ C/7 TAB(KASTANDI)",
+      "COSTO DEMSA": 376.0,
+      "PMP DEMSA": 490
+    },
+    {
+      "codigo": 7501314705283,
+      "descripcion": "DULOXETINA 60MG CAJ C/28 TAB (KASTANDI)",
+      "COSTO DEMSA": 1105.0,
+      "PMP DEMSA": 1440
+    },
+    {
+      "codigo": 8903855089256,
+      "descripcion": "MODAFINILO 200MG CAJ C/30 TAB (WEICOP)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 300698140201,
+      "descripcion": "CRIZOTINIB 250MG CAJ C/60 CAP(XALKORI)",
+      "COSTO DEMSA": 86572.0,
+      "PMP DEMSA": 112140.18
+    },
+    {
+      "codigo": 367877286600,
+      "descripcion": "RILUZOLE 50MG CAJ C/60 TAB (RILUZOLE USP)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 5000456076821,
+      "descripcion": "ANIFROLUMAB-FNIA 300MG/2ML CAJ C/1 FRA(SAPHNELO LQD)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 5415062103357,
+      "descripcion": "ENCORAFENIB 75MG CAJ C/42 CAPS(BRAFTOVI)",
+      "COSTO DEMSA": 49770.55,
+      "PMP DEMSA": 65003.95
+    },
+    {
+      "codigo": 7613326017749,
+      "descripcion": "OCRELIZUMAB 300MG/10ML CAJ C/1 FA(OCREVUS (PROGRAMA POR TI 20%))",
+      "COSTO DEMSA": 207222.0,
+      "PMP DEMSA": 210506
+    },
+    {
+      "codigo": 7730979099431,
+      "descripcion": "ZANUBRUTINIB 80 MG CAJ C/120 CAP(BRUKINSA)",
+      "COSTO DEMSA": 194936.54,
+      "PMP DEMSA": 194936.54
+    },
+    {
+      "codigo": 7501298204987,
+      "descripcion": "FUMARATO DE BISOPROLOL 2.5MG CAJ C/30 GRA (CONCOR)",
+      "COSTO DEMSA": 778.0,
+      "PMP DEMSA": 1128.86
+    },
+    {
+      "codigo": 3594451300422,
+      "descripcion": "CLORHIDRATO DE IVABRADINA 5MG CAJ C/56 COM(PROCORALAN)",
+      "COSTO DEMSA": 1166.0,
+      "PMP DEMSA": 1584.9
+    },
+    {
+      "codigo": 7502216934559,
+      "descripcion": "MOMETASONA 0.05% 10ML CAJ C/1 FA(LOMETOPAN)",
+      "COSTO DEMSA": 317.0,
+      "PMP DEMSA": 472.45
+    },
+    {
+      "codigo": 7502216934566,
+      "descripcion": "MOMETASONA 0.05% 18ML CAJ C/1 FA (LOMETOPAN)",
+      "COSTO DEMSA": 475.0,
+      "PMP DEMSA": 707.61
+    },
+    {
+      "codigo": 7501293200052,
+      "descripcion": "INDOMETACINA 60MG CAJ C/20 CAP(ANTALGIN)",
+      "COSTO DEMSA": 211.0,
+      "PMP DEMSA": 261.43
+    },
+    {
+      "codigo": 7506335703515,
+      "descripcion": "CICLOFOSFAMIDA 500 MG CAJ C/1 FAM(CYATA)",
+      "COSTO DEMSA": 1070.0,
+      "PMP DEMSA": 5000
+    },
+    {
+      "codigo": 7502223557000,
+      "descripcion": "SUNITINIB 12.5 MG CAJ C/28 CAP (CARENEV)",
+      "COSTO DEMSA": 13695.0,
+      "PMP DEMSA": 22855
+    },
+    {
+      "codigo": 7506442701077,
+      "descripcion": "ACIDO ZOLEDRONICO 4MG/5ML CAJ C/1 FA(HETERO)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502209710177,
+      "descripcion": "SUPLEMENTO ALIMENTICIO 5G CAJ C/20 SOB(DIASPORAL GRN)",
+      "COSTO DEMSA": 187.0,
+      "PMP DEMSA": 284.2
+    },
+    {
+      "codigo": 7501089802439,
+      "descripcion": "CLORURO DE POTASIO 1500MG CAJ C/30 TAB(CORPOTASIN LP)",
+      "COSTO DEMSA": 373.0,
+      "PMP DEMSA": 538.09
+    },
+    {
+      "codigo": 7501065054128,
+      "descripcion": "CARBONATO DE CALCIO 500MG FCO C/75 TAB(TUMS)",
+      "COSTO DEMSA": 77.0,
+      "PMP DEMSA": 104.15
+    },
+    {
+      "codigo": 7501065054029,
+      "descripcion": "CARBONATO DE CALCIO 750MG FCO C/48 TAB(TUMS EXT)",
+      "COSTO DEMSA": 82.0,
+      "PMP DEMSA": 125.33
+    },
+    {
+      "codigo": 5415062378830,
+      "descripcion": "DACOMITINIB 45MG FCO C/30 TAB(VIZIMPRO)",
+      "COSTO DEMSA": 39283.0,
+      "PMP DEMSA": 44394.53
+    },
+    {
+      "codigo": 7506429600300,
+      "descripcion": "CARBOPLATINO 150 MG FCO CAJ C/1(PLACART)",
+      "COSTO DEMSA": 289.95,
+      "PMP DEMSA": 1414.64
+    },
+    {
+      "codigo": 7501124819170,
+      "descripcion": "SECUKINUMAB 150MG/ML CAJ C/1 JPRE (COSENTYX)",
+      "COSTO DEMSA": 32353.0,
+      "PMP DEMSA": 34438.02
+    },
+    {
+      "codigo": 7501109920693,
+      "descripcion": "GOLIMUMAB 50MG/0.5ML CAJ C/1 JER(SIMPONI)",
+      "COSTO DEMSA": 33102.53,
+      "PMP DEMSA": 33102.53
+    },
+    {
+      "codigo": 7501109929139,
+      "descripcion": "GOLIMUMAB 100MG /1ML CAJ C/1 JPRE(SIMPONI)",
+      "COSTO DEMSA": 32528.0,
+      "PMP DEMSA": 33102.53
+    },
+    {
+      "codigo": 7506335701511,
+      "descripcion": "DOXORUBICINA 10MG/5ML CAJ C/1 FA(ZODOX)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7506335702099,
+      "descripcion": "MITOXANTRONA 20 MG/10 ML CAJ C/1 FA(BRESNIX)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7500464227935,
+      "descripcion": "RITUXIMAB 100MG/10ML CAJ C/2 FA(BLITZIMA)",
+      "COSTO DEMSA": 7876.0,
+      "PMP DEMSA": 17524
+    },
+    {
+      "codigo": 7500464227942,
+      "descripcion": "RITUXIMAB 500MG/50ML CAJ C/1 FA(BLITZIMA)",
+      "COSTO DEMSA": 16842.0,
+      "PMP DEMSA": 30000
+    },
+    {
+      "codigo": 5415062379134,
+      "descripcion": "BEVACIZUMAB 100MG/4ML CAJ C/1 FA(ZIRABEV)",
+      "COSTO DEMSA": 6358.89,
+      "PMP DEMSA": 11431
+    },
+    {
+      "codigo": 7501493802254,
+      "descripcion": "ERTAPENEM 1G/10 ML CAJ C/1 FA (FINATAK)",
+      "COSTO DEMSA": 856.0,
+      "PMP DEMSA": 2400
+    },
+    {
+      "codigo": 13965555,
+      "descripcion": "PROCARBAZINA 50MG CAJ C/30 TAB (NATULAN)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502209291379,
+      "descripcion": "LIDOCAINA 700MG CAJA C/3 SOB(VERSATIS)",
+      "COSTO DEMSA": 1344.0,
+      "PMP DEMSA": 1789.83
+    },
+    {
+      "codigo": 7501287627643,
+      "descripcion": "IBUPROFENO 600MG CAJ C/10 TAB(MOTRIN)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7508006101682,
+      "descripcion": "GABAPENTINA 300MG CAJ C/15 CAP(GAPRIDOL)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501094916534,
+      "descripcion": "DICLOFENACO 50MG CAJ C/30 TAB(VOLTAREN 50)",
+      "COSTO DEMSA": 473.0,
+      "PMP DEMSA": 690.5
+    },
+    {
+      "codigo": 7501299309186,
+      "descripcion": "ETORICOXIB 120MG CAJ C/7 TAB(DOSCOXEL)",
+      "COSTO DEMSA": 513.0,
+      "PMP DEMSA": 728
+    },
+    {
+      "codigo": 7501088505577,
+      "descripcion": "CELECOXIB 200MG CAJ C/20 CAP(FLEXAKOCS)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501349024601,
+      "descripcion": "BUTILHIOSCINA 10MG CAJ C/10 TAB (BUTILHIOSCINA)",
+      "COSTO DEMSA": 60.0,
+      "PMP DEMSA": 85
+    },
+    {
+      "codigo": 7501075726473,
+      "descripcion": "DAUNORUBICINA 20MG/4ML CAJ C/1 FA(MEXUNA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502216802919,
+      "descripcion": "DICLOFENACO 10MG CAJ C/20 TAB(DICLOFENACO ULTRA)",
+      "COSTO DEMSA": 15.0,
+      "PMP DEMSA": 67.98
+    },
+    {
+      "codigo": 7502216799820,
+      "descripcion": "PREGABALINA 150MG CAJ C/14 CAP(PREGABALINA ULTRA)",
+      "COSTO DEMSA": 65.0,
+      "PMP DEMSA": 789.41
+    },
+    {
+      "codigo": 351144001607,
+      "descripcion": "TUCATINIB 150MG FA C/84 TAB (TUKYSA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 300698141208,
+      "descripcion": "CRIZOTINIB 200MG CAJ C/60 CAP(XALKORI)",
+      "COSTO DEMSA": 86572.0,
+      "PMP DEMSA": 112140.18
+    },
+    {
+      "codigo": 7501070903053,
+      "descripcion": "TRIMEBUTINA 30ML CAJ C1 FA(LIBERTRIM PED)",
+      "COSTO DEMSA": 305.0,
+      "PMP DEMSA": 360.46
+    },
+    {
+      "codigo": 7501070903350,
+      "descripcion": "TRIMEBUTINA 30ML CAJ C/1 FA(LIBERTRIM SDP)",
+      "COSTO DEMSA": 378.0,
+      "PMP DEMSA": 466.47
+    },
+    {
+      "codigo": 5415062115671,
+      "descripcion": "INOTUZUMAB-OZOGAMICINA 1MG/ML CAJ C/1 FA (BESPONSA)",
+      "COSTO DEMSA": 140170.0,
+      "PMP DEMSA": 171066
+    },
+    {
+      "codigo": 7506442701862,
+      "descripcion": "MONTELUKAST 10 MG CAJ C/30 TAB(MONTELUKAST)",
+      "COSTO DEMSA": 50.0,
+      "PMP DEMSA": 995
+    },
+    {
+      "codigo": 7613326030830,
+      "descripcion": "RISDIPLAM 0.75MG/1ML 80ML MX VTA CAJ C/1 FA(EVRYSDI POSO)",
+      "COSTO DEMSA": 296000.0,
+      "PMP DEMSA": 296000
+    },
+    {
+      "codigo": 7501123014705,
+      "descripcion": "KETOCONAZOL/CLINDAMICINA 100MG/400MG CAJ C/1 TUB (FEMISAN)",
+      "COSTO DEMSA": 414.0,
+      "PMP DEMSA": 616.77
+    },
+    {
+      "codigo": 7501008493007,
+      "descripcion": "ACETONIDO DE FLUOCINOLONA/METRONIDAZOL/NISTATINA 0.5MG,500MG,100 000UI CAJ C/10 OVU (VAGITROL-V)",
+      "COSTO DEMSA": 432.0,
+      "PMP DEMSA": 631
+    },
+    {
+      "codigo": 7501314705542,
+      "descripcion": "FLUCONAZOL/TINIDAZOL 37.5MG/500MG CAJ C/4 TAB(AFUMIX)",
+      "COSTO DEMSA": 660.0,
+      "PMP DEMSA": 830
+    },
+    {
+      "codigo": 7501082243550,
+      "descripcion": "GALCANEZUMAB 120 MG/ML CAJ C/1 PLPC(EMGALITY)",
+      "COSTO DEMSA": 5050.0,
+      "PMP DEMSA": 6647
+    },
+    {
+      "codigo": 5391527744429,
+      "descripcion": "RAVULIZUMAB-CWS 1100MG CAJA C/1 FA(ULTOMIRIS)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 3582180000324,
+      "descripcion": "CABOZANTINIB 60MG CAJ C/30 TAB(APTIMETYX)",
+      "COSTO DEMSA": 159213.0,
+      "PMP DEMSA": 446390.28
+    },
+    {
+      "codigo": 7501871720552,
+      "descripcion": "GLUCOSAMINA/CONDROITIN 1500/1200 MG CAJ C/15 SOB(VARTALON COMP)",
+      "COSTO DEMSA": 984.0,
+      "PMP DEMSA": 1369.65
+    },
+    {
+      "codigo": 7501871720590,
+      "descripcion": "GLUCOSAMINA/CONDROITIN 1500/1200 MG CAJ C/30 SOB(VARTALON COMPOSITUM)",
+      "COSTO DEMSA": 1423.0,
+      "PMP DEMSA": 1939.32
+    },
+    {
+      "codigo": 7501287670953,
+      "descripcion": "PREGABALINA 25MG CAJ C/28 CAP(LYRICA)",
+      "COSTO DEMSA": 753.0,
+      "PMP DEMSA": 1145.86
+    },
+    {
+      "codigo": 7730979097840,
+      "descripcion": "ETORICOXIB 90 MG CAJ C/14 TAB(XUMER)",
+      "COSTO DEMSA": 852.0,
+      "PMP DEMSA": 1171.05
+    },
+    {
+      "codigo": 7730979097857,
+      "descripcion": "ETORICOXIB 90 MG CAJ C/28 TAB(XUMER)",
+      "COSTO DEMSA": 1215.0,
+      "PMP DEMSA": 1669.66
+    },
+    {
+      "codigo": 7501124184735,
+      "descripcion": "VITAMINA D (CALCIFEROL) 3ML CAJ C/1 FA(CARNOTVID)",
+      "COSTO DEMSA": 473.0,
+      "PMP DEMSA": 560
+    },
+    {
+      "codigo": 7502278220409,
+      "descripcion": "LANADELUMAB 300MG/2ML CAJ C/1 FA(TAKHZYRO)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501300450210,
+      "descripcion": "TRIMETOPRIMA/SULFAMETOXAZOL 800/160MG CAJ C/15 TAB(BACTRIM F)",
+      "COSTO DEMSA": 331.0,
+      "PMP DEMSA": 502
+    },
+    {
+      "codigo": 7502223557079,
+      "descripcion": "ABIRATERONA 500 MG CAJ C/60 TABLETAS(AVITOSYN)",
+      "COSTO DEMSA": 63571.0,
+      "PMP DEMSA": 79855
+    },
+    {
+      "codigo": 7502223557086,
+      "descripcion": "AXITINIB 5MG FA C/60 TAB(CAXETIB)",
+      "COSTO DEMSA": 78954.0,
+      "PMP DEMSA": 103080
+    },
+    {
+      "codigo": 7500464605931,
+      "descripcion": "GILTERITINIB 40 MG CAJ C/84 TAB(XOSPATA)",
+      "COSTO DEMSA": 440342.0,
+      "PMP DEMSA": 447321
+    },
+    {
+      "codigo": 3662042003059,
+      "descripcion": "TREHALOSA HIALURONATO DE SODIO 3/0.15 10 ML CAJ C/1 FA(THEALOZ DUO)",
+      "COSTO DEMSA": 668.0,
+      "PMP DEMSA": 833
+    },
+    {
+      "codigo": 7501384503215,
+      "descripcion": "IMIPRAMINA 25MG CAJ C/20 TAB (TALPRAMIN)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501124820299,
+      "descripcion": "TIZANIDINA 2MG COM CAJ C/20 TAB(SIRDALUD)",
+      "COSTO DEMSA": 507.0,
+      "PMP DEMSA": 633.18
+    },
+    {
+      "codigo": 7501109900503,
+      "descripcion": "MICONAZOL GEL ORAL TUBO C/78 G(DAKTARIN)",
+      "COSTO DEMSA": 683.0,
+      "PMP DEMSA": 1048.2
+    },
+    {
+      "codigo": 7315015006,
+      "descripcion": "UBLITUXIMAB-XIIY 150MG/6ML (25MG/ML) CAJ C/1 VIAL(BRIUMVI)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501201405043,
+      "descripcion": "TOXINA TIPO A BOTULINICA/TOXINA BOTULINICA 100UI CAJ C/1 FAM (BOTOX)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501493802438,
+      "descripcion": "ETAMSILATO 250MG/ 2ML CAJA C/4 AMP(CAPHEMASIL)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 8044640101,
+      "descripcion": "TEBENTAFUSP-TEBN 100MCG/0.5ML CAJ C/1 FA(KIMMTRAK)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 8054083019154,
+      "descripcion": "UPADACITINIB 15 MG CAJ C/28 TAB(RIM-VOQ)",
+      "COSTO DEMSA": 24330.0,
+      "PMP DEMSA": 25406
+    },
+    {
+      "codigo": 7502251890773,
+      "descripcion": "LEUPRORELINA 3.75MG CAJ C/1 FA (SILUPROD)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 4054839325243,
+      "descripcion": "SOMATROPINA 60 UI 20 MG (8 MG/ML) CAJ C/1 CRT(SAIZEN)",
+      "COSTO DEMSA": 7195.0,
+      "PMP DEMSA": 14239.46
+    },
+    {
+      "codigo": 7502216934993,
+      "descripcion": "SOMATROPINA RECOMBINANTE 15MG/1.5ML SOL CAJ C/1 CRT (AZUL)(OMNITROPE)",
+      "COSTO DEMSA": 3733.0,
+      "PMP DEMSA": 7346.71
+    },
+    {
+      "codigo": 7730979097994,
+      "descripcion": "COLECALCIFEROL 100000 IU CAJ C/1 CAP(DEMUS)",
+      "COSTO DEMSA": 525.0,
+      "PMP DEMSA": 730.89
+    },
+    {
+      "codigo": 7501125114717,
+      "descripcion": "METFORMINA 850MG CAJ C/30 TAB(FICONAX)",
+      "COSTO DEMSA": 207.0,
+      "PMP DEMSA": 253.5
+    },
+    {
+      "codigo": 7891317019570,
+      "descripcion": "AZILSARTAN 40MG FA C/14 TAB(EDARBI)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501567700394,
+      "descripcion": "LIDOCAINA HCL 2% 1.8 ML CAJ C/50 CAR(OMNICAINA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502216793132,
+      "descripcion": "CLINDAMICINA 300MG CAJ C/16 TAB(ULTRA)",
+      "COSTO DEMSA": 49.0,
+      "PMP DEMSA": 564.57
+    },
+    {
+      "codigo": 7502216793880,
+      "descripcion": "FINASTERIDA 5MG CAJ C/30 TAB(ULTRA)",
+      "COSTO DEMSA": 70.0,
+      "PMP DEMSA": 1319.3
+    },
+    {
+      "codigo": 7501303451559,
+      "descripcion": "ESTRADIOL/DROSPERIDONA 1MG/2MG CAJ C/28 COM(ANGELIQ)",
+      "COSTO DEMSA": 1068.0,
+      "PMP DEMSA": 1388
+    },
+    {
+      "codigo": 5000456076821,
+      "descripcion": "ANIFROLUMAB-FNIA 300MG/2ML CAJ C/1 FRA(SAPHNELO CON 35% DE DESC)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501125127373,
+      "descripcion": "VITAMINA C 1G/10ML CAJ/6 AMP(INFALET)",
+      "COSTO DEMSA": 139.0,
+      "PMP DEMSA": 329
+    },
+    {
+      "codigo": 5000456037327,
+      "descripcion": "TREMELIMUMAB 300MG/15ML CAJA C/1 FA(IMJUDO)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501300420121,
+      "descripcion": "DULOXETINA 30MG CAJ C/14 CAP(ABRETIA)",
+      "COSTO DEMSA": 548.0,
+      "PMP DEMSA": 788
+    },
+    {
+      "codigo": 6738613051,
+      "descripcion": "EPTINEZUMAB-JJMR 100MG/ML CAJ C/1 FA(VYEPTI)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": 0
+    },
+    {
+      "codigo": 7501109931392,
+      "descripcion": "TECLISTAMAB-CQYV 30MG/3ML CAJ C/1 FA(TECVAYLI)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501109931408,
+      "descripcion": "TECLISTAMAB-CQYV 153MG/1.7ML CAJ C/1 FA(TECVAYLI)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501124820190,
+      "descripcion": "MIDOSTAURINA 25MG CAJ C/112 CAP(RYDAPT)",
+      "COSTO DEMSA": 309548.0,
+      "PMP DEMSA": 314453.43
+    },
+    {
+      "codigo": 7501314705344,
+      "descripcion": "FLUCONAZOL 100MG CAJ C/10 CAP(AFUNGIL)",
+      "COSTO DEMSA": 1765.0,
+      "PMP DEMSA": 2280
+    },
+    {
+      "codigo": 7501125108686,
+      "descripcion": "FLUCONAZOL 100MG CAJ C/10 CAP(FLUCOXAN)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501299307687,
+      "descripcion": "LEVOFLOXACINO 500MG CAJ C/7  TAB (EVOCS)",
+      "COSTO DEMSA": 506.0,
+      "PMP DEMSA": 711
+    },
+    {
+      "codigo": 7501125118296,
+      "descripcion": "LEVOFLOXACINO 500MG CAJ C/7 COM (FLUONING)",
+      "COSTO DEMSA": 346.0,
+      "PMP DEMSA": 579.9
+    },
+    {
+      "codigo": 7501299330265,
+      "descripcion": "VALACICLOVIR 500MG CAJ C/42 COM(VALEXTRA)",
+      "COSTO DEMSA": 1643.0,
+      "PMP DEMSA": 2322
+    },
+    {
+      "codigo": 7502246642011,
+      "descripcion": "PARACETAMOL/ORFENADRINA 450MG/35MG CAJ C/30 CAP(NORFLEX PLUS GB)",
+      "COSTO DEMSA": 508.0,
+      "PMP DEMSA": 721
+    },
+    {
+      "codigo": 7613326005487,
+      "descripcion": "MICOFENOLATO DE MOFETILO 500MG CAJ C/50 COM (CELLCEPT)",
+      "COSTO DEMSA": 7865.0,
+      "PMP DEMSA": 7990
+    },
+    {
+      "codigo": 7501088507502,
+      "descripcion": "HIDROXIZINA 10MG CAJ C/30 GRA(ATARAX)",
+      "COSTO DEMSA": 434.0,
+      "PMP DEMSA": 620
+    },
+    {
+      "codigo": 372187010234,
+      "descripcion": "ELACESTRANT 345MG CAJA C/30 TAB(ORSERDU)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501559602965,
+      "descripcion": "DASATINIB 50 MG CAJ C/60 TAB(DACINASA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7798180922214,
+      "descripcion": "FLUOROURACILO 500MG/10ML CAJ C/5 FA(FIVANOV)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 8054083027777,
+      "descripcion": "EPCORITAMAB-BYSP 4MG/0.8ML CAJ C/1 FA(EPKINLY)",
+      "COSTO DEMSA": 10798.0,
+      "PMP DEMSA": 10798
+    },
+    {
+      "codigo": 8054083027760,
+      "descripcion": "EPCORITAMAB-BYSP 48MG/0.8ML CAJ C/1 FA(EPKINLY)",
+      "COSTO DEMSA": 129580.0,
+      "PMP DEMSA": 129580
+    },
+    {
+      "codigo": 5000456054911,
+      "descripcion": "BEZAFIBRATO 200MG CAJ C/30 TAB(SAPRAME)",
+      "COSTO DEMSA": 72793.0,
+      "PMP DEMSA": 76906
+    },
+    {
+      "codigo": 7502226290621,
+      "descripcion": "BEZAFIBRATO 200MG CAJ C/30 TAB(ZAF)",
+      "COSTO DEMSA": 176.0,
+      "PMP DEMSA": 260.82
+    },
+    {
+      "codigo": 8901120009930,
+      "descripcion": "PARACETAMOL/TRAMADOL 325/37.5 MG CAJ C/20 TAB(TRAPAZYD)",
+      "COSTO DEMSA": 307.0,
+      "PMP DEMSA": 483
+    },
+    {
+      "codigo": 7501314704040,
+      "descripcion": "SUCRALFATO 1GR CAJ C/40 TAB (UNIVAL)",
+      "COSTO DEMSA": 400.0,
+      "PMP DEMSA": 450
+    },
+    {
+      "codigo": 7177739101,
+      "descripcion": "LAROTRECTINIB 100MG CAJ C/60 CAP(VITRAKVI)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7503003746126,
+      "descripcion": "ESCITALOPRAM 10MG CAJ C/28 TAB(LEXAPRO)",
+      "COSTO DEMSA": 1639.0,
+      "PMP DEMSA": 2316
+    },
+    {
+      "codigo": 7640133685373,
+      "descripcion": "LENALIDOMA 20MG CAJ C/21 CAP (REVLIMID)",
+      "COSTO DEMSA": 110843.0,
+      "PMP DEMSA": 112600
+    },
+    {
+      "codigo": 7501287640918,
+      "descripcion": "ATORVASTATINA 40MG 2 CAJ C/30 TAB(LIPITOR (DUO))",
+      "COSTO DEMSA": 2646.0,
+      "PMP DEMSA": 4147.76
+    },
+    {
+      "codigo": 1210001175037,
+      "descripcion": "ATORVASTATINA 40MG CAJ C/30 TAB(LIPITOR)",
+      "COSTO DEMSA": 1515.0,
+      "PMP DEMSA": 2311.11
+    },
+    {
+      "codigo": 5000456054911,
+      "descripcion": "DURVALUMAB 500MG/10ML CAJ C/1 FA(IMFINZIO (PROGRAMA MAZSALUD 50% DE DESCUENTO))",
+      "COSTO DEMSA": 72793.0,
+      "PMP DEMSA": 76906
+    },
+    {
+      "codigo": 7501384545734,
+      "descripcion": "HIDROXIZINA 10MG CAJ C/30 TAB(AKISKAM)",
+      "COSTO DEMSA": 300.0,
+      "PMP DEMSA": 400.37
+    },
+    {
+      "codigo": 7501318688339,
+      "descripcion": "AFLIBERCEPT 40ML/ML FCO C/1 AMP(WETLIA (VALENCIANA))",
+      "COSTO DEMSA": 22916.0,
+      "PMP DEMSA": 23558
+    },
+    {
+      "codigo": 7896116865663,
+      "descripcion": "CIPROTERONA/ETINILESTRADIOL 2MG/0.035MG CAJ C/21 TAB(DIANE)",
+      "COSTO DEMSA": 511.0,
+      "PMP DEMSA": 697
+    },
+    {
+      "codigo": 7501125117701,
+      "descripcion": "HIERRO DEXTRAN 100MG/2ML CAJ C/3 AMP(FERROIN)",
+      "COSTO DEMSA": 141.0,
+      "PMP DEMSA": 189.4
+    },
+    {
+      "codigo": 5415062370537,
+      "descripcion": "INOTUZUMAB-OZOGAMICINA 1MG SFDPO 1x20 ML CAJ C/1 FA(BESPONSA)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501314706228,
+      "descripcion": "DIHEXAZIN 60MG FCO C/140ML(VITERNUM)",
+      "COSTO DEMSA": 310.0,
+      "PMP DEMSA": 400
+    },
+    {
+      "codigo": 300650454179,
+      "descripcion": "POLIETILENGLICOL/PROPILENGLICOL 0.4% GOT FCO C/10ML(SYSTANE GEL)",
+      "COSTO DEMSA": 525.0,
+      "PMP DEMSA": 772.2
+    },
+    {
+      "codigo": 7502216792579,
+      "descripcion": "CAPTOPRIL 25 MG CAJ C/30 TAB(CAPTOPRIL (ULTRA))",
+      "COSTO DEMSA": 8.0,
+      "PMP DEMSA": 58.74
+    },
+    {
+      "codigo": 7501287670038,
+      "descripcion": "AMLODIPINO 5MG CAJ C/30 TAB(NORVAS)",
+      "COSTO DEMSA": 1084.0,
+      "PMP DEMSA": 1463.65
+    },
+    {
+      "codigo": 7501299305386,
+      "descripcion": "LOSARTAN POTASICO 50MG CAJ C/30 TAB (LODESTAR)",
+      "COSTO DEMSA": 723.0,
+      "PMP DEMSA": 878
+    },
+    {
+      "codigo": 5391527744436,
+      "descripcion": "RAVULIZUMAB-CWVZ 300MG/30ML CAJ C/1 FA(ULTOMIRIS)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501070612320,
+      "descripcion": "NEOMICINA/CAOLIN/PECTINA 0.733G/10G/.7G CAJ C/1 FA(TREDA)",
+      "COSTO DEMSA": 144.0,
+      "PMP DEMSA": 227
+    },
+    {
+      "codigo": 7501142940153,
+      "descripcion": "LINEZOLID 600MG CAJ C/10 TAB(ZYVOXAM)",
+      "COSTO DEMSA": 9451.0,
+      "PMP DEMSA": 15854.57
+    },
+    {
+      "codigo": 7503007704573,
+      "descripcion": "RACECADOTRIL LACT 10MG CAJ C/18 SOB(HIDRASEC)",
+      "COSTO DEMSA": 254.0,
+      "PMP DEMSA": 351.44
+    },
+    {
+      "codigo": 7503007704580,
+      "descripcion": "RACECADOTRIL NIÑ 30MG CAJ C/18 SOB (HIDRASEC)",
+      "COSTO DEMSA": 235.0,
+      "PMP DEMSA": 394.17
+    },
+    {
+      "codigo": 5000456076821,
+      "descripcion": "ANIFROLUMAB-FNIA 300MG/2ML CAJ C/1 FRA(SAPHNELO LQD (PROGRAMA ASTRAZENECA 10%))",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501300420800,
+      "descripcion": "LEVOCETIRIZINA 5MG CAJ C/30 TAB (LEVIGRIX)",
+      "COSTO DEMSA": 534.0,
+      "PMP DEMSA": 798
+    },
+    {
+      "codigo": 323155261417,
+      "descripcion": "CARMUTHER 100MG/3ML CAJ C/1 FA(BICNU FOR INJECTION IP)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502223556836,
+      "descripcion": "GEFITINIB 250MG CAJ C/30 TAB(FEXILEV)",
+      "COSTO DEMSA": 37987.0,
+      "PMP DEMSA": 70100
+    },
+    {
+      "codigo": 7501098600798,
+      "descripcion": "BUDESONIDA 100 MCG CAJ C/1 FA C/200 DOSIS(PULMICORT TURBUHALER)",
+      "COSTO DEMSA": 799.0,
+      "PMP DEMSA": 1121
+    },
+    {
+      "codigo": 7503000883527,
+      "descripcion": "ACIDO TRANEXAMICO 650MG CAJ C/30 TAB(LYSTEDA)",
+      "COSTO DEMSA": 1067.0,
+      "PMP DEMSA": 1575
+    },
+    {
+      "codigo": 8906163560622,
+      "descripcion": "MELFALAN 50MG CAJ C/1 FA(ALKERAN)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501101627224,
+      "descripcion": "CIANOCOBALAMINA/PIRIDOXINA/TIAMINA 250mG/50MG/100MG CAJ C/30 CAP(TIAMINAL B12 TRIV AP)",
+      "COSTO DEMSA": 347.0,
+      "PMP DEMSA": 532
+    },
+    {
+      "codigo": 4046222163808,
+      "descripcion": "NEUROTOXINA DE CLOSTRIDIUM BOTULINUM 100 U CAJ C/1 FA(XEOMEEN)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501070602307,
+      "descripcion": "ANASTROZOL 1MG CAJ C/28 TAB(LAPOSTIM)",
+      "COSTO DEMSA": 352.0,
+      "PMP DEMSA": 1283
+    },
+    {
+      "codigo": 4046222601645,
+      "descripcion": "MEMANTINA 10MG CAJA C28 TAB(AKATINOL)",
+      "COSTO DEMSA": 1026.0,
+      "PMP DEMSA": 1399.83
+    },
+    {
+      "codigo": 7501249605436,
+      "descripcion": "ALPRAZOLAM 2MG CAJ C/30 TAB(FARMAPRAM)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 8073981218,
+      "descripcion": "ADAGRASIB 200MG CAJ C/180(KRAZATI)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501041990006,
+      "descripcion": "NIVOLUMAB 100MG/10ML CAJ C/1 FA(OPDIVO)",
+      "COSTO DEMSA": 39417.0,
+      "PMP DEMSA": 45298
+    },
+    {
+      "codigo": 7501041990013,
+      "descripcion": "NIVOLUMAB 40MG/4ML CAJ C/1 FA(OPDIVO)",
+      "COSTO DEMSA": 15764.0,
+      "PMP DEMSA": 18116
+    },
+    {
+      "codigo": 7501287628749,
+      "descripcion": "INFLIXIMAB 100MG CAJ C/1 FA(IXIFI)",
+      "COSTO DEMSA": 10902.46,
+      "PMP DEMSA": 15798.24
+    },
+    {
+      "codigo": 7501125111259,
+      "descripcion": "BICARNAT BICARBONATO DE SODIO PISA 100 AMPOLLETAS 7.5% (10ML)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501493874695,
+      "descripcion": "DIFENHIDRAMINA SOL. INYECTABLE 10MG CAJ C/1 (DIFENHISTAT)",
+      "COSTO DEMSA": 102.0,
+      "PMP DEMSA": 540
+    },
+    {
+      "codigo": 7501125170751,
+      "descripcion": " PALONOSETRON 0.25MG/ 5ML SOL INY C/1 (VINALTRO)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502253073945,
+      "descripcion": "PERFALGAN 1G SOL INY FCO 100ML",
+      "COSTO DEMSA": 177.0,
+      "PMP DEMSA": 246.47
+    },
+    {
+      "codigo": 7502253073952,
+      "descripcion": "PERFALGAN 1G SOLINY C/4FCOS100ML(PERFALGAN)",
+      "COSTO DEMSA": 697.0,
+      "PMP DEMSA": 970.04
+    },
+    {
+      "codigo": 7501125123702,
+      "descripcion": "CLORURO DE POTASIO 1.49 G/5ML CAJ C/1 FA(KELEFUSIN)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502226292403,
+      "descripcion": "ONDANSETRON 8MG/4ML C/1 AMP (ANTIVON)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501043162487,
+      "descripcion": "VENTOLIN 18G 200D AEROSOL",
+      "COSTO DEMSA": 549.0,
+      "PMP DEMSA": 786.45
+    },
+    {
+      "codigo": 7502227872246,
+      "descripcion": "ENALADIL 10MG C/30 TAB",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501165011632,
+      "descripcion": "BUSCAPINA COMPOSITUM 10MG TAB",
+      "COSTO DEMSA": 393.0,
+      "PMP DEMSA": 565.2
+    },
+    {
+      "codigo": 7501493868915,
+      "descripcion": "COMVUFEN FENITOINA KENER 1 AMPOLLETA 250MG / 5ML",
+      "COSTO DEMSA": 14.0,
+      "PMP DEMSA": 122
+    },
+    {
+      "codigo": 7501125192289,
+      "descripcion": "BUTILHIOSCINA 20MG/1ML(CAPIN BH)",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501008499047,
+      "descripcion": "ASPIRINA 500 MG TAB",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501165011632,
+      "descripcion": "BUSCAPINA COMPOSITUM 10MG TAB",
+      "COSTO DEMSA": 393.0,
+      "PMP DEMSA": 565.2
+    },
+    {
+      "codigo": 7501008499382,
+      "descripcion": "FLANAX 550MG TAB",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7502216802919,
+      "descripcion": "DICLOFENACO 100MG TAB",
+      "COSTO DEMSA": 15.0,
+      "PMP DEMSA": 67.98
+    },
+    {
+      "codigo": 650240036361,
+      "descripcion": "GENOPRAZOL 20MP CAP ",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501072310378,
+      "descripcion": "MELOX PLUS GEL 150 ML",
+      "COSTO DEMSA": 127.0,
+      "PMP DEMSA": 202.75
+    },
+    {
+      "codigo": 7501125198670,
+      "descripcion": "OLENOBRAN 5MG TAB c/10",
+      "COSTO DEMSA": 0.0,
+      "PMP DEMSA": "-"
+    },
+    {
+      "codigo": 7501125155659,
+      "descripcion": "LIBONIDE 0.500MG/2ML 5FA C/5JGA 3ML",
+      "COSTO DEMSA": 247.0,
+      "PMP DEMSA": 414.6
+    },
+    {
+      "codigo": 7501125154515,
+      "descripcion": "FONTANIVIO 5MG C/14TAB NVO TLJ",
+      "COSTO DEMSA": 498.0,
+      "PMP DEMSA": 694.77
+    },
+    {
+      "codigo": 7501125160646,
+      "descripcion": "VINZA 0.5MG/2.5MG C/2.5ML 10AMP SNEB",
+      "COSTO DEMSA": 269.0,
+      "PMP DEMSA": 339.5
+    },
+    {
+      "codigo": 7501165008328,
+      "descripcion": "CABAZITAXEL 60MG/1.5ML CAJ C/1 FA(JEVTANA)",
+      "COSTO DEMSA": 114400.0,
+      "PMP DEMSA": 115383.89
+    }
+  ],
+  "servicios": [
+    {
+      "nombre": "KIT DE INSUMOS",
+      "precio": 1800.0
+    },
+    {
+      "nombre": "SILLON DE INFUSIÓN - DERECHO DE SALA",
+      "precio": 2500.0
+    },
+    {
+      "nombre": "SERVICIO DE MEZCLA",
+      "precio": 1200.0
+    },
+    {
+      "nombre": "HONORARIOS MÉDICOS",
+      "precio": 0.0
+    },
+    {
+      "nombre": "HONORARIOS MÉDICO TRATANTE",
+      "precio": NaN
+    },
+    {
+      "nombre": "Gracias por tu confianza.",
+      "precio": 0.0
+    },
+    {
+      "nombre": "SAN-SAI-FOR-01",
+      "precio": 0.0
+    }
+  ],
+  "header": {
+    "direccion": "Av. Paseo Tollocan 2533 , Delegación Santa María Totoltepec, 50246 Toluca de Lerdo, Méx.",
+    "telefono": "Teléfono: 722 197 08 36",
+    "aseguradora": "PAGO DE BOLSILLO"
+  }
+});
+</script>
+</body>
+</html>
